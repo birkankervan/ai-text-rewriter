@@ -8,6 +8,13 @@ export interface Model {
         prompt: string
         completion: string
     }
+    architecture?: {
+        modality: string
+        tokenizer?: string
+        instruct_type?: string
+    }
+    input_modalities?: string[]
+    output_modalities?: string[]
 }
 
 // Generic fetcher function
@@ -55,20 +62,25 @@ export function useOpenRouterModels() {
             API_ENDPOINTS.openrouter.models,
             undefined,
             (data) => {
-                // Filter out text-to-image and vision models
+                // Filter for text-only models using API fields
                 const textModels = data.data.filter((m: any) => {
-                    const id = m.id.toLowerCase()
-                    const name = m.name.toLowerCase()
-
-                    // Exclude image/vision models
-                    if (id.includes('flux') || id.includes('dall-e') || id.includes('midjourney') ||
-                        id.includes('stable-diffusion') || id.includes('sdxl') || id.includes('imagen') ||
-                        name.includes('image') || name.includes('vision') || name.includes('flux')) {
-                        return false
+                    // Method 1: Check architecture.modality
+                    if (m.architecture?.modality === "text->text") {
+                        return true
                     }
 
-                    // Keep text-to-text models
-                    return true
+                    // Method 2: Check input/output modalities arrays (fallback)
+                    const inputIsTextOnly =
+                        Array.isArray(m.input_modalities) &&
+                        m.input_modalities.length === 1 &&
+                        m.input_modalities[0] === "text"
+
+                    const outputIsTextOnly =
+                        Array.isArray(m.output_modalities) &&
+                        m.output_modalities.length === 1 &&
+                        m.output_modalities[0] === "text"
+
+                    return inputIsTextOnly && outputIsTextOnly
                 })
 
                 // Curated list of best translation models (prioritized)
@@ -107,7 +119,10 @@ export function useOpenRouterModels() {
                     .map((m: any) => ({
                         id: m.id,
                         name: m.name + (translationChampions.includes(m.id) ? ' ⭐' : ''),
-                        pricing: m.pricing
+                        pricing: m.pricing,
+                        architecture: m.architecture,
+                        input_modalities: m.input_modalities,
+                        output_modalities: m.output_modalities
                     }))
             }
         ),

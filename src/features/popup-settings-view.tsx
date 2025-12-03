@@ -2,21 +2,25 @@ import { useState, useEffect } from "react"
 import { Storage } from "@plasmohq/storage"
 import { SUPPORTED_LANGUAGES } from "~lib/constants"
 import { Settings, ExternalLink } from "lucide-react"
+import type { TranslationProvider } from "~lib/llm-types"
 
 const storage = new Storage()
 
 export const PopupSettingsView = () => {
     const [defaultRewriteLang, setDefaultRewriteLang] = useState("Keep Original")
     const [defaultTranslateLang, setDefaultTranslateLang] = useState("English")
+    const [translationProvider, setTranslationProvider] = useState<TranslationProvider>("free")
     const [status, setStatus] = useState("")
 
     useEffect(() => {
         const loadSettings = async () => {
             const rewriteLang = await storage.get("default_lang_rewrite")
             const translateLang = await storage.get("default_lang_translate")
+            const provider = await storage.get("preferred_translation_provider") as TranslationProvider
 
             if (rewriteLang) setDefaultRewriteLang(rewriteLang)
             if (translateLang) setDefaultTranslateLang(translateLang)
+            if (provider) setTranslationProvider(provider)
         }
         loadSettings()
     }, [])
@@ -24,6 +28,7 @@ export const PopupSettingsView = () => {
     const handleSave = async () => {
         await storage.set("default_lang_rewrite", defaultRewriteLang)
         await storage.set("default_lang_translate", defaultTranslateLang)
+        await storage.set("preferred_translation_provider", translationProvider)
         setStatus("Saved!")
         setTimeout(() => setStatus(""), 2000)
     }
@@ -66,6 +71,31 @@ export const PopupSettingsView = () => {
                         </option>
                     ))}
                 </select>
+            </div>
+
+            {/* Translation Engine Toggle */}
+            <div className="plasmo-flex plasmo-flex-col plasmo-gap-1">
+                <label className="plasmo-text-[10px] plasmo-font-semibold plasmo-text-slate-500 dark:plasmo-text-slate-400 plasmo-uppercase plasmo-tracking-wider">
+                    Translate via
+                </label>
+                <div className="plasmo-grid plasmo-grid-cols-2 plasmo-gap-1 plasmo-p-0.5 plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-rounded-md">
+                    <button
+                        onClick={() => setTranslationProvider("ai")}
+                        className={`plasmo-py-1.5 plasmo-px-2 plasmo-rounded plasmo-text-[10px] plasmo-font-bold plasmo-transition-all ${translationProvider === "ai"
+                                ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-text-blue-600 dark:plasmo-text-blue-400 plasmo-shadow-sm"
+                                : "plasmo-text-slate-500 dark:plasmo-text-slate-400"
+                            }`}>
+                        🤖 AI
+                    </button>
+                    <button
+                        onClick={() => setTranslationProvider("free")}
+                        className={`plasmo-py-1.5 plasmo-px-2 plasmo-rounded plasmo-text-[10px] plasmo-font-bold plasmo-transition-all ${translationProvider === "free"
+                                ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-text-green-600 dark:plasmo-text-green-400 plasmo-shadow-sm"
+                                : "plasmo-text-slate-500 dark:plasmo-text-slate-400"
+                            }`}>
+                        🌐 Free
+                    </button>
+                </div>
             </div>
 
             <button

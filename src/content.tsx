@@ -106,6 +106,24 @@ const PlasmoOverlayContent = () => {
   const [modalPlacement, setModalPlacement] = useState<"top" | "bottom">("bottom")
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Check if API key exists for rewrite functionality
+  const [hasApiKey, setHasApiKey] = useState(false)
+
+  useEffect(() => {
+    const checkApiKey = async () => {
+      const storage = new Storage()
+      const activeProvider = await storage.get("active_provider") || "openrouter"
+      const apiKey = await storage.get(`${activeProvider}_key`)
+      setHasApiKey(!!apiKey)
+    }
+    checkApiKey()
+
+    // Re-check when window gains focus (in case user added key in options)
+    const handleFocus = () => checkApiKey()
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
   // Use new useStream hook - no separate saveHistory function needed
   const { generate, data: prefetchedData, isLoading: isPrefetching } = useStream()
   const [hasPrefetched, setHasPrefetched] = useState(false)
@@ -113,15 +131,13 @@ const PlasmoOverlayContent = () => {
   const handleMouseEnterTranslate = async () => {
     if (mode === "translate" && selectedText && !hasPrefetched && !showModal) {
       const storage = new Storage()
-      const activeProvider = await storage.get("active_provider") || "openrouter"
-      const apiKey = await storage.get(`${activeProvider}_key`)
       const defaultLang = await storage.get("default_lang_translate") as SupportedLanguage || "English"
 
-      if (apiKey) {
-        setHasPrefetched(true)
-        // Enable autoSaveHistory for prefetch - it will save when complete
-        generate(selectedText, { mode: "translate", targetLang: defaultLang }, true)
-      }
+      // Always prefetch - translation gateway will handle provider selection
+      //  (free translation doesn't need API key)
+      setHasPrefetched(true)
+      // Enable autoSaveHistory for prefetch - it will save when complete
+      generate(selectedText, { mode: "translate", targetLang: defaultLang }, true)
     }
   }
 
@@ -166,6 +182,14 @@ const PlasmoOverlayContent = () => {
       }
 
       const editable = isEditableElement(activeElement)
+
+      // Only show rewrite button if editable AND has API key
+      if (editable && !hasApiKey) {
+        // Editable context but no API key - don't show button
+        setIsVisible(false)
+        return
+      }
+
       setMode(editable ? "rewrite" : "translate")
 
       let rect: DOMRect | null = null

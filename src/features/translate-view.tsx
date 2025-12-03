@@ -29,10 +29,11 @@ export const TranslateView = ({
 
     // Auto-start translation on mount (only if not using prefetch)
     useEffect(() => {
-        if (apiKey && initialText && !isUsingPrefetch) {
+        // Translation gateway handles provider selection (doesn't need API key check)
+        if (initialText && !isUsingPrefetch) {
             generate(initialText, { mode: "translate", targetLang: sessionTargetLang })
         }
-    }, [apiKey, initialText, isUsingPrefetch])
+    }, [initialText, isUsingPrefetch])
 
     // Update target lang if default changes (only on initial mount effectively)
     useEffect(() => {
@@ -51,8 +52,8 @@ export const TranslateView = ({
         setSessionTargetLang(newLang)
         setOverridePrefetch(true)
 
-        // 3. Start new generation immediately
-        if (apiKey && initialText) {
+        // 3. Start new generation immediately (gateway handles provider)
+        if (initialText) {
             generate(initialText, { mode: "translate", targetLang: newLang })
         }
     }

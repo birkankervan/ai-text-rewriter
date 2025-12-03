@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { Storage } from "@plasmohq/storage"
 import { sendToBackground } from "@plasmohq/messaging"
-import { llmService } from "~services/llm"
+import { translationGateway } from "~services/translation-gateway"
 import type { PromptOptions } from "~lib/prompt-utils"
 
 // State machine types
@@ -56,10 +56,11 @@ export function useStream() {
         setState({ status: 'streaming', data: '' })
 
         try {
-            const securePrompt = `<input>${prompt}</input>`
-
-            const stream = llmService.generateText(securePrompt, {
-                ...options,
+            // Use translation gateway instead of direct LLM service
+            const stream = translationGateway.translateText(prompt, {
+                mode: options.mode,
+                targetLang: options.targetLang,
+                tone: options.tone,
                 signal: controller.signal
             })
 
@@ -81,8 +82,30 @@ export function useStream() {
             // Save history if requested
             if (autoSaveHistory && fullText) {
                 const storage = new Storage()
-                const provider = await storage.get("active_provider") || "openrouter"
-                const model = await storage.get(`${provider}_model`) || "default"
+
+                // Determine actual provider used based on mode and preferences
+                let provider: string
+                let model: string
+
+                if (options.mode === "translate") {
+                    // Check if free translation was used
+                    const preferredProvider = await storage.get("preferred_translation_provider") || "free"
+                    const activeProvider = await storage.get("active_provider") || "openrouter"
+                    const hasApiKey = await storage.get(`${activeProvider}_key`)
+
+                    // Use free if: preference is free OR (preference is AI but no key exists - fallback)
+                    if (preferredProvider === "free" || (preferredProvider === "ai" && !hasApiKey)) {
+                        provider = "Google Translate"
+                        model = "free"
+                    } else {
+                        provider = activeProvider
+                        model = await storage.get(`${activeProvider}_model`) || "default"
+                    }
+                } else {
+                    // Rewrite mode always uses AI
+                    provider = await storage.get("active_provider") || "openrouter"
+                    model = await storage.get(`${provider}_model`) || "default"
+                }
 
                 const historyPayload = {
                     type: options.mode,
