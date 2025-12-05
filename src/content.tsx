@@ -9,7 +9,8 @@ import { useStream } from "~hooks/use-stream"
 import type { SupportedLanguage } from "~lib/constants"
 
 export const config: PlasmoCSConfig = {
-  matches: ["<all_urls>"]
+  matches: ["<all_urls>"],
+  all_frames: true
 }
 
 export const getStyle = (): HTMLStyleElement => {
@@ -182,13 +183,6 @@ const PlasmoOverlayContent = () => {
       }
 
       const editable = isEditableElement(activeElement)
-
-      // Only show rewrite button if editable AND has API key
-      if (editable && !hasApiKey) {
-        // Editable context but no API key - don't show button
-        setIsVisible(false)
-        return
-      }
 
       setMode(editable ? "rewrite" : "translate")
 
