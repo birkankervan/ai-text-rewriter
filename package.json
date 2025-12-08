@@ -1,7 +1,7 @@
 {
   "name": "ai-text-rewriter",
   "displayName": "Smart Translate & Rewrite: AI Grammar Fixer & Paraphraser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instantly rewrite text, fix grammar, change tone, and translate on any website using your preferred AI (OpenAI, Gemini, Groq).",
   "author": "Birkan Kervan",
   "scripts": {
