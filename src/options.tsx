@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Storage } from "@plasmohq/storage"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HistoryTable } from "~features/history-table"
-import { Settings, History, LayoutGrid, Key, Check, Save, Zap, Shield, ChevronDown, ChevronUp } from "lucide-react"
+import { Settings, History, LayoutGrid, Key, Check, Save, Zap, Shield, ChevronDown, ChevronUp, ExternalLink, BookOpen, LifeBuoy } from "lucide-react"
 import { useOpenAIModels, useOpenRouterModels, useGeminiModels, useGroqModels } from "~hooks/use-models"
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "~lib/constants"
 import type { TranslationProvider } from "~lib/llm-types"
@@ -289,6 +289,45 @@ function OptionsContent() {
                             History
                         </button>
                     </nav>
+
+
+                    <div className="plasmo-mt-auto plasmo-pt-8 plasmo-border-t plasmo-border-slate-200 dark:plasmo-border-slate-800">
+                        <h3 className="plasmo-text-xs plasmo-font-semibold plasmo-text-slate-400 plasmo-uppercase plasmo-tracking-wider plasmo-mb-3">
+                            Resources
+                        </h3>
+                        <nav className="plasmo-flex plasmo-flex-col plasmo-gap-1">
+                            <a
+                                href="https://birkankervan.github.io/ai-text-rewriter/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="plasmo-flex plasmo-items-center plasmo-gap-3 plasmo-px-4 plasmo-py-2 plasmo-rounded-lg plasmo-text-sm plasmo-text-slate-600 dark:plasmo-text-slate-400 hover:plasmo-bg-slate-50 dark:hover:plasmo-bg-slate-800 plasmo-transition-all">
+                                <ExternalLink className="plasmo-w-4 plasmo-h-4" />
+                                Project Home
+                            </a>
+                            <a
+                                href="https://birkankervan.github.io/ai-text-rewriter/setup.html"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="plasmo-flex plasmo-items-center plasmo-gap-3 plasmo-px-4 plasmo-py-2 plasmo-rounded-lg plasmo-text-sm plasmo-text-slate-600 dark:plasmo-text-slate-400 hover:plasmo-bg-slate-50 dark:hover:plasmo-bg-slate-800 plasmo-transition-all">
+                                <BookOpen className="plasmo-w-4 plasmo-h-4" />
+                                Setup Guide
+                            </a>
+                            <a
+                                href="https://birkankervan.github.io/ai-text-rewriter/PRIVACY_POLICY"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="plasmo-flex plasmo-items-center plasmo-gap-3 plasmo-px-4 plasmo-py-2 plasmo-rounded-lg plasmo-text-sm plasmo-text-slate-600 dark:plasmo-text-slate-400 hover:plasmo-bg-slate-50 dark:hover:plasmo-bg-slate-800 plasmo-transition-all">
+                                <Shield className="plasmo-w-4 plasmo-h-4" />
+                                Privacy Policy
+                            </a>
+                            <a
+                                href="mailto:e.birkankervan@gmail.com"
+                                className="plasmo-flex plasmo-items-center plasmo-gap-3 plasmo-px-4 plasmo-py-2 plasmo-rounded-lg plasmo-text-sm plasmo-text-slate-600 dark:plasmo-text-slate-400 hover:plasmo-bg-slate-50 dark:hover:plasmo-bg-slate-800 plasmo-transition-all">
+                                <LifeBuoy className="plasmo-w-4 plasmo-h-4" />
+                                Support
+                            </a>
+                        </nav>
+                    </div>
                 </div>
             </div>
 
@@ -412,7 +451,12 @@ function OptionsContent() {
                                         </div>
                                         <div>
                                             <h2 className="plasmo-text-lg plasmo-font-semibold plasmo-text-slate-900 dark:plasmo-text-white">API Key Vault</h2>
-                                            <p className="plasmo-text-sm plasmo-text-slate-500">Securely store your API keys. Keys are saved locally in your browser.</p>
+                                            <p className="plasmo-text-sm plasmo-text-slate-500">
+                                                Securely store your API keys.
+                                                <a href="https://birkankervan.github.io/ai-text-rewriter/setup.html" target="_blank" className="plasmo-text-blue-500 hover:plasmo-underline plasmo-ml-1">
+                                                    Where do I get keys?
+                                                </a>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -505,7 +549,7 @@ function OptionsContent() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 
