@@ -1,0 +1,47 @@
+name: Build Extension
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to build'
+        required: true
+        type: string
+    outputs:
+      artifact_name:
+        description: "Name of the uploaded artifact"
+        value: ${{ jobs.build.outputs.artifact_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: extension-build-${{ inputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Extension
+        run: pnpm build
+
+      - name: Package Extension
+        run: pnpm package
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-build-${{ inputs.version }}
+          path: build/chrome-mv3-prod.zip

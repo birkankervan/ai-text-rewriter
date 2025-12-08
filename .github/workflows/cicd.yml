@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'package.json'
+      - 'CHANGELOG.md'
+      - 'README.md'
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    uses: ./.github/workflows/version-bump.yml
+    with:
+      version-type: 'patch'
+    permissions:
+      contents: write
+
+  build:
+    needs: bump-version
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.bump-version.outputs.new_version }}
+
+  release:
+    needs: [bump-version, build]
+    uses: ./.github/workflows/release.yml
+    with:
+      version: ${{ needs.bump-version.outputs.new_version }}
+      artifact_name: ${{ needs.build.outputs.artifact_name }}
+      changelog: ${{ needs.bump-version.outputs.changelog }}
+    permissions:
+      contents: write
