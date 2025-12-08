@@ -97,7 +97,7 @@ const strategies: Record<string, ProviderStrategy> = {
         getHeaders: (apiKey) => ({
             "Authorization": `Bearer ${apiKey}`,
             "HTTP-Referer": "https://github.com/PlasmoHQ/plasmo",
-            "X-Title": "AI Text Rewriter Extension",
+            "X-Title": "Smart Translate & Rewrite",
             "Content-Type": "application/json"
         }),
         getBody: (model, systemPrompt, userPrompt, temperature) => ({

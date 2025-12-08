@@ -49,7 +49,7 @@ function PopupContent() {
           <div className="plasmo-flex plasmo-items-center plasmo-gap-2">
             <div className="plasmo-w-2 plasmo-h-2 plasmo-rounded-full plasmo-bg-blue-500 plasmo-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
             <h1 className="plasmo-text-xs plasmo-font-bold plasmo-tracking-wide plasmo-text-white/90">
-              AI REWRITER
+              Smart Translate & Rewrite
             </h1>
           </div>
           <button

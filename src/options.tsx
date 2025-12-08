@@ -266,7 +266,7 @@ function OptionsContent() {
                         <div className="plasmo-w-8 plasmo-h-8 plasmo-rounded-lg plasmo-bg-gradient-to-br plasmo-from-blue-500 plasmo-to-purple-600 plasmo-flex plasmo-items-center plasmo-justify-center">
                             <LayoutGrid className="plasmo-w-5 plasmo-h-5 plasmo-text-white" />
                         </div>
-                        <span className="plasmo-font-bold plasmo-text-lg">AI Rewriter</span>
+                        <span className="plasmo-font-bold plasmo-text-lg">Smart Translate & Rewrite</span>
                     </div>
 
                     <nav className="plasmo-flex plasmo-flex-col plasmo-gap-1">

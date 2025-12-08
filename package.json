@@ -1,8 +1,8 @@
 {
   "name": "ai-text-rewriter",
-  "displayName": "Ai text rewriter",
+  "displayName": "Smart Translate & Rewrite",
   "version": "0.0.1",
-  "description": "a text rewriter",
+  "description": "Smart Translate & Rewrite - AI-powered text rewriting and translation",
   "author": "Birkan Kervan",
   "scripts": {
     "dev": "plasmo dev",
@@ -33,7 +33,15 @@
   },
   "manifest": {
     "host_permissions": [
-      "https://*/*"
+      "https://openrouter.ai/*",
+      "https://api.openai.com/*",
+      "https://generativelanguage.googleapis.com/*",
+      "https://api.groq.com/*",
+      "https://translate.googleapis.com/*"
+    ],
+    "permissions": [
+      "alarms",
+      "storage"
     ]
   }
 }
