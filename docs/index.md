@@ -4,6 +4,13 @@
 
 Instantly rewrite text, fix grammar, change tone, and translate on *any* website using your preferred AI (OpenAI, Gemini, Groq, OpenRouter).
 
+<div align="center">
+
+[![Download Latest Release](https://img.shields.io/github/v/release/birkankervan/ai-text-rewriter?style=for-the-badge&label=Download&color=blue)](https://github.com/birkankervan/ai-text-rewriter/releases/latest)
+[![View Releases](https://img.shields.io/badge/GitHub-Releases-gray?style=for-the-badge&logo=github)](https://github.com/birkankervan/ai-text-rewriter/releases)
+
+</div>
+
 ---
 
 ## ✨ Why use this extension?

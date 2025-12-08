@@ -10,7 +10,7 @@ Complete guide to installing the extension and setting up your AI keys.
 
 Since this extension is in "Developer Mode" or downloaded as a ZIP file, follow these steps to install it:
 
-1.  **Download and Unzip**: Download the latest release `.zip` file and extract it to a folder on your computer.
+1.  **Download and Unzip**: Download the [latest release `.zip` file](https://github.com/birkankervan/ai-text-rewriter/releases/latest) and extract it to a folder on your computer.
 2.  **Open Extensions Page**: In Chrome (or Brave/Edge/Opera), go to `chrome://extensions` (type this in the address bar).
 3.  **Enable Developer Mode**: Toggle the switch **"Developer mode"** in the top right corner.
 4.  **Load Extension**:
