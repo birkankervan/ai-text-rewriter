@@ -77,3 +77,10 @@ Once you have your key from one of the providers above:
 5. Click on your provider (e.g., "Google Gemini") to expand the input field.
 6. Paste your API key and click **"Save"**.
 7. Select this provider as your **"Active Provider"** at the top of the settings page.
+
+---
+
+## 📧 Support
+
+Need help or have suggestions?  
+[Contact Support](mailto:e.birkankervan@gmail.com)
