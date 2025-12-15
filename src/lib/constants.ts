@@ -45,3 +45,28 @@ export const API_ENDPOINTS = {
         models: "https://api.groq.com/openai/v1/models"
     }
 } as const
+
+export const LANGUAGE_TO_CODE: Record<string, string> = {
+    "English": "en",
+    "Spanish": "es",
+    "French": "fr",
+    "German": "de",
+    "Italian": "it",
+    "Portuguese": "pt",
+    "Dutch": "nl",
+    "Russian": "ru",
+    "Chinese (Simplified)": "zh-CN",
+    "Japanese": "ja",
+    "Korean": "ko",
+    "Arabic": "ar",
+    "Hindi": "hi",
+    "Turkish": "tr",
+    "Greek": "el",
+    "Hebrew": "he",
+    "Swedish": "sv",
+    "Polish": "pl",
+    "Vietnamese": "vi",
+    "Thai": "th",
+    "Georgian": "ka"
+}
+

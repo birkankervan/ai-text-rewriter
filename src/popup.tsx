@@ -5,6 +5,7 @@ import { Storage } from "@plasmohq/storage"
 import { Key, Settings2 } from "lucide-react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import RewriteView from "~features/rewrite-view"
+import { TranslatePopupView } from "~features/translate-popup-view"
 import { PopupSettingsView } from "~features/popup-settings-view"
 import { type SupportedLanguage } from "~lib/constants"
 import "./style.css"
@@ -13,9 +14,10 @@ const storage = new Storage()
 const queryClient = new QueryClient()
 
 function PopupContent() {
-  const [activeTab, setActiveTab] = useState<"rewrite" | "settings">("rewrite")
+  const [activeTab, setActiveTab] = useState<"rewrite" | "translate" | "settings">("rewrite")
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [defaultRewriteLang, setDefaultRewriteLang] = useState<SupportedLanguage>("Keep Original")
+  const [defaultTranslateLang, setDefaultTranslateLang] = useState<SupportedLanguage>("English")
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -23,9 +25,11 @@ function PopupContent() {
       const activeProvider = await storage.get("active_provider") || "openrouter"
       const key = await storage.get(`${activeProvider}_key`)
       const rewriteLang = await storage.get("default_lang_rewrite") as SupportedLanguage
+      const translateLang = await storage.get("default_lang_translate") as SupportedLanguage
 
       if (key) setApiKey(key)
       if (rewriteLang) setDefaultRewriteLang(rewriteLang)
+      if (translateLang) setDefaultTranslateLang(translateLang)
       setIsLoading(false)
     }
     loadSettings()
@@ -64,6 +68,14 @@ function PopupContent() {
         <div className="plasmo-px-3 plasmo-pt-2 plasmo-pb-1">
           <div className="plasmo-flex plasmo-p-0.5 plasmo-bg-black/20 plasmo-rounded-lg plasmo-backdrop-blur-md plasmo-border plasmo-border-white/5">
             <button
+              onClick={() => setActiveTab("translate")}
+              className={`plasmo-flex-1 plasmo-py-1.5 plasmo-text-[10px] plasmo-font-bold plasmo-rounded-md plasmo-transition-all ${activeTab === "translate"
+                ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-lg plasmo-shadow-black/20 plasmo-border plasmo-border-white/10"
+                : "plasmo-text-white/40 hover:plasmo-text-white/70 hover:plasmo-bg-white/5"
+                }`}>
+              Translate
+            </button>
+            <button
               onClick={() => setActiveTab("rewrite")}
               className={`plasmo-flex-1 plasmo-py-1.5 plasmo-text-[10px] plasmo-font-bold plasmo-rounded-md plasmo-transition-all ${activeTab === "rewrite"
                 ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-lg plasmo-shadow-black/20 plasmo-border plasmo-border-white/10"
@@ -97,6 +109,14 @@ function PopupContent() {
                     apiKey={apiKey}
                     defaultTargetLang={defaultRewriteLang}
                     showPlaceholder={true}
+                  />
+                </div>
+              )}
+              {activeTab === "translate" && (
+                <div className="plasmo-animate-in plasmo-fade-in plasmo-slide-in-from-bottom-2 plasmo-duration-300">
+                  <TranslatePopupView
+                    apiKey={apiKey}
+                    defaultTargetLang={defaultTranslateLang}
                   />
                 </div>
               )}

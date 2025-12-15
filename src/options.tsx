@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react"
+import iconSrc from "url:~assets/icon.png"
+
+
 import { Storage } from "@plasmohq/storage"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HistoryTable } from "~features/history-table"
@@ -260,13 +263,15 @@ function OptionsContent() {
     return (
         <div className="plasmo-min-h-screen plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-slate-900 dark:plasmo-text-slate-100 plasmo-flex" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif' }}>
             {/* Sidebar */}
-            <div className="plasmo-w-64 plasmo-bg-white dark:plasmo-bg-slate-900 plasmo-border-r plasmo-border-slate-200 dark:plasmo-border-slate-800 plasmo-flex plasmo-flex-col plasmo-fixed plasmo-h-full">
+            <div className="plasmo-w-72 plasmo-bg-white dark:plasmo-bg-slate-900 plasmo-border-r plasmo-border-slate-200 dark:plasmo-border-slate-800 plasmo-flex plasmo-flex-col plasmo-fixed plasmo-h-full">
                 <div className="plasmo-p-6">
-                    <div className="plasmo-flex plasmo-items-center plasmo-gap-2 plasmo-mb-8">
-                        <div className="plasmo-w-8 plasmo-h-8 plasmo-rounded-lg plasmo-bg-gradient-to-br plasmo-from-blue-500 plasmo-to-purple-600 plasmo-flex plasmo-items-center plasmo-justify-center">
-                            <LayoutGrid className="plasmo-w-5 plasmo-h-5 plasmo-text-white" />
+                    <div className="plasmo-flex plasmo-items-center plasmo-gap-3 plasmo-mb-8">
+                        <div className="plasmo-w-8 plasmo-h-8 plasmo-min-w-[32px] plasmo-rounded-lg plasmo-overflow-hidden plasmo-shadow-sm">
+                            <img src={iconSrc} alt="Logo" className="plasmo-w-full plasmo-h-full plasmo-object-cover" />
                         </div>
-                        <span className="plasmo-font-bold plasmo-text-lg">Smart Translate & Rewrite</span>
+                        <span className="plasmo-font-bold plasmo-text-base plasmo-tracking-tight plasmo-text-slate-900 dark:plasmo-text-white plasmo-whitespace-nowrap">
+                            Smart Translate & Rewrite
+                        </span>
                     </div>
 
                     <nav className="plasmo-flex plasmo-flex-col plasmo-gap-1">
@@ -332,7 +337,7 @@ function OptionsContent() {
             </div>
 
             {/* Main Content */}
-            <div className="plasmo-flex-1 plasmo-ml-64 plasmo-p-8">
+            <div className="plasmo-flex-1 plasmo-ml-72 plasmo-p-8">
                 <div className="plasmo-max-w-4xl plasmo-mx-auto">
                     <header className="plasmo-mb-8">
                         <h1 className="plasmo-text-2xl plasmo-font-bold plasmo-text-slate-900 dark:plasmo-text-white">
