@@ -125,10 +125,10 @@ export const TranslatePopupView = ({
                             disabled={isLoading || !apiKey}
                             title={!apiKey ? "Add API key in settings to use AI" : "Use AI for high-quality translation"}
                             className={`plasmo-px-2 plasmo-py-1 plasmo-rounded-sm plasmo-text-[10px] plasmo-font-bold plasmo-transition-all plasmo-flex plasmo-items-center plasmo-gap-1 ${!apiKey
-                                    ? "plasmo-opacity-40 plasmo-cursor-not-allowed plasmo-text-white/30"
-                                    : mode === "ai"
-                                        ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-sm"
-                                        : "plasmo-text-white/40 hover:plasmo-text-white/60"
+                                ? "plasmo-opacity-40 plasmo-cursor-not-allowed plasmo-text-white/30"
+                                : mode === "ai"
+                                    ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-sm"
+                                    : "plasmo-text-white/40 hover:plasmo-text-white/60"
                                 }`}>
                             {apiKey ? <Bot className="plasmo-w-3 plasmo-h-3" /> : <span className="plasmo-text-[8px]">🔒</span>}
                             AI
@@ -150,7 +150,7 @@ export const TranslatePopupView = ({
                 <button
                     onClick={handleTranslate}
                     disabled={isLoading || !inputText.trim() || (mode === "ai" && !apiKey)}
-                    className="plasmo-w-full plasmo-bg-gradient-to-r plasmo-from-blue-600 plasmo-to-cyan-600 hover:plasmo-from-blue-500 hover:plasmo-to-cyan-500 disabled:plasmo-from-gray-700 disabled:plasmo-to-gray-700 plasmo-text-white plasmo-py-1.5 plasmo-rounded-lg plasmo-font-bold plasmo-text-xs plasmo-shadow-lg plasmo-shadow-blue-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98] disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed">
+                    className="plasmo-w-full plasmo-bg-blue-600 hover:plasmo-bg-blue-500 disabled:plasmo-bg-gray-700 plasmo-text-white plasmo-py-1.5 plasmo-rounded-lg plasmo-font-bold plasmo-text-xs plasmo-shadow-lg plasmo-shadow-blue-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98] disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed">
                     {isLoading ? (
                         <div className="plasmo-w-4 plasmo-h-4 plasmo-border-2 plasmo-border-white/30 plasmo-border-t-white plasmo-rounded-full plasmo-animate-spin" />
                     ) : (

@@ -465,7 +465,7 @@ function OptionsContent() {
                                 <div className="plasmo-p-6 plasmo-flex plasmo-flex-col plasmo-gap-6">
                                     {/* No API Key Warning */}
                                     {!Object.values(keyExists).some(Boolean) && (
-                                        <div className="plasmo-p-4 plasmo-rounded-xl plasmo-bg-gradient-to-r plasmo-from-amber-500/10 plasmo-to-orange-500/10 plasmo-border plasmo-border-amber-500/30">
+                                        <div className="plasmo-p-4 plasmo-rounded-xl plasmo-bg-amber-500/10 plasmo-border plasmo-border-amber-500/30">
                                             <div className="plasmo-flex plasmo-items-start plasmo-gap-3">
                                                 <div className="plasmo-p-2 plasmo-bg-amber-500/20 plasmo-rounded-lg plasmo-mt-0.5">
                                                     <Key className="plasmo-w-4 plasmo-h-4 plasmo-text-amber-500" />

@@ -69,7 +69,7 @@ const FloatingButton = ({ mode, position, onRewrite, onTranslate, onMouseEnterTr
         title={isRewrite ? "Rewrite" : "Translate"}
       >
         {/* Animated Gradient Background */}
-        <div className="plasmo-absolute plasmo-inset-0 plasmo-rounded-full plasmo-bg-gradient-to-tr plasmo-from-blue-500/10 plasmo-via-purple-500/10 plasmo-to-emerald-500/10 plasmo-animate-pulse" />
+        <div className="plasmo-absolute plasmo-inset-0 plasmo-rounded-full plasmo-bg-blue-500/10 plasmo-animate-pulse" />
 
         {/* Icon */}
         {isRewrite ? (
