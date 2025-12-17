@@ -1,8 +1,16 @@
 import { ArrowRight, Check, Copy, Globe } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLLM } from "~hooks/use-llm"
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "~lib/constants"
 import { ErrorState } from "./components/error-state"
+
+interface TranslateViewProps {
+    initialText: string
+    apiKey: string | null
+    defaultTargetLang: SupportedLanguage
+    prefetchedData?: string
+    prefetchedIsLoading?: boolean
+}
 
 export const TranslateView = ({
     initialText,
@@ -10,13 +18,7 @@ export const TranslateView = ({
     defaultTargetLang,
     prefetchedData,
     prefetchedIsLoading
-}: {
-    initialText: string
-    apiKey: string | null
-    defaultTargetLang: SupportedLanguage
-    prefetchedData?: string
-    prefetchedIsLoading?: boolean
-}) => {
+}: TranslateViewProps) => {
     const [sessionTargetLang, setSessionTargetLang] = useState<SupportedLanguage>(defaultTargetLang)
     const [isCopied, setIsCopied] = useState(false)
     const [overridePrefetch, setOverridePrefetch] = useState(false)
@@ -33,7 +35,7 @@ export const TranslateView = ({
         if (initialText && !isUsingPrefetch) {
             generate(initialText, { mode: "translate", targetLang: sessionTargetLang })
         }
-    }, [initialText, isUsingPrefetch])
+    }, [initialText, isUsingPrefetch, generate, sessionTargetLang])
 
     // Update target lang if default changes (only on initial mount effectively)
     useEffect(() => {
@@ -42,7 +44,7 @@ export const TranslateView = ({
         }
     }, [defaultTargetLang])
 
-    const handleLanguageChange = (newLang: SupportedLanguage) => {
+    const handleLanguageChange = useCallback((newLang: SupportedLanguage) => {
         if (newLang === sessionTargetLang) return
 
         // 1. Stop previous generation if any
@@ -56,14 +58,23 @@ export const TranslateView = ({
         if (initialText) {
             generate(initialText, { mode: "translate", targetLang: newLang })
         }
-    }
+    }, [sessionTargetLang, stop, initialText, generate])
 
-    const handleCopy = () => {
+    const handleCopy = useCallback(() => {
         if (!data || isLoading) return
         navigator.clipboard.writeText(data)
         setIsCopied(true)
         setTimeout(() => setIsCopied(false), 2000)
-    }
+    }, [data, isLoading])
+
+    // Memoize options to prevent unnecessary re-renders of list items
+    const languageOptions = useMemo(() => (
+        SUPPORTED_LANGUAGES.filter(l => l !== "Keep Original").map(lang => (
+            <option key={lang} value={lang} className="plasmo-text-black">
+                {lang}
+            </option>
+        ))
+    ), [])
 
     return (
         <div className="plasmo-flex plasmo-flex-col plasmo-gap-3 plasmo-p-4">
@@ -83,11 +94,7 @@ export const TranslateView = ({
                         disabled={isLoading}
                         onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
                         className="plasmo-bg-transparent plasmo-text-white plasmo-text-[10px] plasmo-font-medium focus:plasmo-outline-none plasmo-cursor-pointer plasmo-appearance-none plasmo-py-0.5 plasmo-px-2 hover:plasmo-text-white/80 plasmo-transition-colors disabled:plasmo-cursor-not-allowed">
-                        {SUPPORTED_LANGUAGES.filter(l => l !== "Keep Original").map(lang => (
-                            <option key={lang} value={lang} className="plasmo-text-black">
-                                {lang}
-                            </option>
-                        ))}
+                        {languageOptions}
                     </select>
                 </div>
             </div>

@@ -14,7 +14,6 @@ type StreamState =
 export function useStream() {
     const [state, setState] = useState<StreamState>({ status: 'idle' })
     const abortControllerRef = useRef<AbortController | null>(null)
-    const lastOptionsRef = useRef<{ prompt: string, options: PromptOptions } | null>(null)
 
     // Cleanup on unmount
     useEffect(() => {
@@ -39,14 +38,57 @@ export function useStream() {
         })
     }, [])
 
+    const saveHistory = async (prompt: string, fullText: string, options: PromptOptions) => {
+        const storage = new Storage()
+        // Determine actual provider used based on mode and preferences
+        let provider: string
+        let model: string
+
+        if (options.mode === "translate") {
+            // Check if free translation was used
+            const preferredProvider = await storage.get("preferred_translation_provider") || "free"
+            const activeProvider = await storage.get("active_provider") || "openrouter"
+            const hasApiKey = await storage.get(`${activeProvider}_key`)
+
+            // Use free if: preference is free OR (preference is AI but no key exists - fallback)
+            if (preferredProvider === "free" || (preferredProvider === "ai" && !hasApiKey)) {
+                provider = "Google Translate"
+                model = "free"
+            } else {
+                provider = activeProvider
+                model = await storage.get(`${activeProvider}_model`) || "default"
+            }
+        } else {
+            // Rewrite mode always uses AI
+            provider = await storage.get("active_provider") || "openrouter"
+            model = await storage.get(`${provider}_model`) || "default"
+        }
+
+        const historyPayload = {
+            type: options.mode,
+            original: prompt,
+            result: fullText,
+            provider,
+            model,
+            rewriteOptions: options.mode === "rewrite" ? {
+                tone: options.tone
+            } : undefined,
+            translateOptions: options.mode === "translate" ? {
+                targetLang: options.targetLang
+            } : undefined
+        }
+
+        await sendToBackground({
+            name: "save-history",
+            body: historyPayload
+        })
+    }
+
     const generate = useCallback(async (prompt: string, options: PromptOptions, autoSaveHistory: boolean = true) => {
         // Stop any ongoing generation
         if (abortControllerRef.current) {
             abortControllerRef.current.abort()
         }
-
-        // Store for history
-        lastOptionsRef.current = { prompt, options }
 
         // Create new abort controller
         const controller = new AbortController()
@@ -81,50 +123,7 @@ export function useStream() {
 
             // Save history if requested
             if (autoSaveHistory && fullText) {
-                const storage = new Storage()
-
-                // Determine actual provider used based on mode and preferences
-                let provider: string
-                let model: string
-
-                if (options.mode === "translate") {
-                    // Check if free translation was used
-                    const preferredProvider = await storage.get("preferred_translation_provider") || "free"
-                    const activeProvider = await storage.get("active_provider") || "openrouter"
-                    const hasApiKey = await storage.get(`${activeProvider}_key`)
-
-                    // Use free if: preference is free OR (preference is AI but no key exists - fallback)
-                    if (preferredProvider === "free" || (preferredProvider === "ai" && !hasApiKey)) {
-                        provider = "Google Translate"
-                        model = "free"
-                    } else {
-                        provider = activeProvider
-                        model = await storage.get(`${activeProvider}_model`) || "default"
-                    }
-                } else {
-                    // Rewrite mode always uses AI
-                    provider = await storage.get("active_provider") || "openrouter"
-                    model = await storage.get(`${provider}_model`) || "default"
-                }
-
-                const historyPayload = {
-                    type: options.mode,
-                    original: prompt,
-                    result: fullText,
-                    provider,
-                    model,
-                    rewriteOptions: options.mode === "rewrite" ? {
-                        tone: options.tone
-                    } : undefined,
-                    translateOptions: options.mode === "translate" ? {
-                        targetLang: options.targetLang
-                    } : undefined
-                }
-
-                const response = await sendToBackground({
-                    name: "save-history",
-                    body: historyPayload
-                })
+                await saveHistory(prompt, fullText, options)
             }
         } catch (err: any) {
             // Handle abort vs actual errors

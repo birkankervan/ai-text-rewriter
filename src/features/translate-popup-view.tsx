@@ -1,87 +1,128 @@
-import { ArrowRight, Bot, Check, Copy, Globe, Sparkles, Zap } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { ArrowRight, Bot, Check, Copy, Globe, Zap } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLLM } from "~hooks/use-llm"
 import { LANGUAGE_TO_CODE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "~lib/constants"
 import { sendToBackground } from "@plasmohq/messaging"
 import { ErrorState } from "./components/error-state"
 
+// Mock hook for free translation to match useLLM signature
+// Keeps the component logic unified
+const useFreeTranslate = () => {
+    const [state, setState] = useState<{
+        isLoading: boolean
+        data: string
+        error: string | null
+    }>({
+        isLoading: false,
+        data: "",
+        error: null
+    })
+
+    const generate = useCallback(async (text: string, targetLang: SupportedLanguage) => {
+        setState({ isLoading: true, data: "", error: null })
+        try {
+            const langCode = LANGUAGE_TO_CODE[targetLang]
+            if (!langCode) throw new Error("Language not supported in Free mode")
+
+            const resp = await sendToBackground({
+                name: "free-translate",
+                body: {
+                    text,
+                    to: langCode
+                }
+            })
+
+            if (resp.error) throw new Error(resp.error)
+            setState({ isLoading: false, data: resp.translatedText, error: null })
+        } catch (err: any) {
+            setState({ isLoading: false, data: "", error: err.message || "Translation failed" })
+        }
+    }, [])
+
+    return {
+        ...state,
+        generate
+    }
+}
+
+interface TranslatePopupViewProps {
+    apiKey: string | null
+    defaultTargetLang: SupportedLanguage
+}
+
 export const TranslatePopupView = ({
     apiKey,
     defaultTargetLang
-}: {
-    apiKey: string | null
-    defaultTargetLang: SupportedLanguage
-}) => {
+}: TranslatePopupViewProps) => {
     const [inputText, setInputText] = useState("")
     const [targetLang, setTargetLang] = useState<SupportedLanguage>(defaultTargetLang)
     const [mode, setMode] = useState<"ai" | "free">("ai")
     const [isCopied, setIsCopied] = useState(false)
-    const [freeResult, setFreeResult] = useState("")
-    const [isFreeLoading, setIsFreeLoading] = useState(false)
-    const [freeError, setFreeError] = useState<string | null>(null)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
-    const { generate, stop, isLoading: isAILoading, error: aiError, data: aiData } = useLLM()
 
+    // Hooks for both modes
+    const { generate: generateAI, isLoading: isAILoading, error: aiError, data: aiData } = useLLM()
+    const { generate: generateFree, isLoading: isFreeLoading, error: freeError, data: freeResult } = useFreeTranslate()
+
+    // Unified state derivation
     const isLoading = mode === "ai" ? isAILoading : isFreeLoading
     const error = mode === "ai" ? aiError : freeError
     const result = mode === "ai" ? aiData : freeResult
 
-    // Auto-resize textarea
+    // Optimize Textarea Auto-resize
+    // Use layout effect or strict updated ref logic to prevent jitter
+    const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const val = e.target.value
+        setInputText(val)
+
+        // Resize logic encapsulated here to avoid useEffect overhead
+        const el = e.target
+        el.style.height = "auto"
+        el.style.height = `${el.scrollHeight}px`
+    }, [])
+
+    // Initial resize sync (still needed for initial content)
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto"
             textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
         }
-    }, [inputText])
+    }, [inputText]) // Keep dependent on inputText for external updates (e.g. paste)
 
-    // Update target lang if default changes
+    // Sync default lang
     useEffect(() => {
         if (defaultTargetLang) {
             setTargetLang(defaultTargetLang)
         }
     }, [defaultTargetLang])
 
-    const handleTranslate = async () => {
+    const handleTranslate = useCallback(async () => {
         if (!inputText.trim()) return
 
         if (mode === "ai") {
             if (!apiKey) return
-            generate(inputText, { mode: "translate", targetLang })
+            generateAI(inputText, { mode: "translate", targetLang })
         } else {
-            // Free Mode
-            setIsFreeLoading(true)
-            setFreeError(null)
-            setFreeResult("")
-
-            try {
-                const langCode = LANGUAGE_TO_CODE[targetLang]
-                if (!langCode) throw new Error("Language not supported in Free mode")
-
-                const resp = await sendToBackground({
-                    name: "free-translate",
-                    body: {
-                        text: inputText,
-                        to: langCode
-                    }
-                })
-
-                if (resp.error) throw new Error(resp.error)
-                setFreeResult(resp.translatedText)
-            } catch (err: any) {
-                setFreeError(err.message || "Translation failed")
-            } finally {
-                setIsFreeLoading(false)
-            }
+            generateFree(inputText, targetLang)
         }
-    }
+    }, [inputText, mode, apiKey, targetLang, generateAI, generateFree])
 
-    const handleCopy = () => {
+    const handleCopy = useCallback(() => {
         if (!result || isLoading) return
         navigator.clipboard.writeText(result)
         setIsCopied(true)
         setTimeout(() => setIsCopied(false), 2000)
-    }
+    }, [result, isLoading])
+
+    // Memoize language options to prevent re-renders of the list
+    const languageOptions = useMemo(() => (
+        SUPPORTED_LANGUAGES.filter(l => l !== "Keep Original").map(lang => (
+            <option key={lang} value={lang} className="plasmo-text-black">
+                {lang}
+            </option>
+        ))
+    ), [])
 
     return (
         <div className="plasmo-flex plasmo-flex-col plasmo-gap-3 plasmo-p-2">
@@ -90,7 +131,7 @@ export const TranslatePopupView = ({
                 <textarea
                     ref={textareaRef}
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
+                    onChange={handleInput}
                     className="plasmo-w-full plasmo-bg-white/5 plasmo-rounded-lg plasmo-p-3 plasmo-text-white/90 plasmo-resize-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 focus:plasmo-bg-white/10 plasmo-transition-all plasmo-text-xs plasmo-leading-relaxed plasmo-placeholder-white/20"
                     rows={3}
                     placeholder="Enter text to translate..."
@@ -107,11 +148,7 @@ export const TranslatePopupView = ({
                             onChange={(e) => setTargetLang(e.target.value as SupportedLanguage)}
                             disabled={isLoading}
                             className="plasmo-w-full plasmo-bg-gray-100/10 plasmo-text-white/90 plasmo-text-[11px] plasmo-font-bold plasmo-rounded-md plasmo-px-2 plasmo-py-1.5 plasmo-appearance-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 hover:plasmo-bg-white/10 plasmo-transition-all plasmo-cursor-pointer disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed">
-                            {SUPPORTED_LANGUAGES.filter(l => l !== "Keep Original").map(lang => (
-                                <option key={lang} value={lang} className="plasmo-text-black">
-                                    {lang}
-                                </option>
-                            ))}
+                            {languageOptions}
                         </select>
                         <div className="plasmo-absolute plasmo-right-2 plasmo-top-1/2 plasmo-transform plasmo--translate-y-1/2 plasmo-pointer-events-none">
                             <ArrowRight className="plasmo-w-3 plasmo-h-3 plasmo-text-white/50" />
@@ -212,3 +249,4 @@ export const TranslatePopupView = ({
         </div>
     )
 }
+

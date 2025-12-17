@@ -1,10 +1,20 @@
 import { ArrowRight, Check, Copy, RefreshCw, Sparkles, Square } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLLM } from "~hooks/use-llm"
 import { SUPPORTED_LANGUAGES, TONES, type SupportedLanguage, type Tone } from "~lib/constants"
 import { ErrorState } from "./components/error-state"
 import { Button } from "~components/ui/button"
 import { Textarea } from "~components/ui/textarea"
+
+interface RewriteViewProps {
+    initialText: string
+    onReplace?: (text: string) => void
+    apiKey: string | null
+    defaultTargetLang: SupportedLanguage
+    showPlaceholder?: boolean
+    radiusClass?: string
+    selectRadiusClass?: string
+}
 
 export const RewriteView = ({
     initialText,
@@ -14,15 +24,7 @@ export const RewriteView = ({
     showPlaceholder = false,
     radiusClass = "plasmo-rounded-lg",
     selectRadiusClass = "plasmo-rounded-md"
-}: {
-    initialText: string
-    onReplace?: (text: string) => void
-    apiKey: string | null
-    defaultTargetLang: SupportedLanguage
-    showPlaceholder?: boolean
-    radiusClass?: string
-    selectRadiusClass?: string
-}) => {
+}: RewriteViewProps) => {
     const [inputText, setInputText] = useState(initialText)
     const [tone, setTone] = useState<Tone>("Professional")
     const [targetLang, setTargetLang] = useState<SupportedLanguage>(defaultTargetLang)
@@ -32,7 +34,18 @@ export const RewriteView = ({
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const { generate, stop, reset, isLoading, error, data } = useLLM()
 
-    // Auto-resize textarea
+    // Optimize Textarea Auto-resize
+    const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const val = e.target.value
+        setInputText(val)
+
+        // Synchronous resize to prevent jitter
+        const el = e.target
+        el.style.height = "auto"
+        el.style.height = `${el.scrollHeight}px`
+    }, [])
+
+    // Initial resize and programmatic updates
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto"
@@ -47,19 +60,47 @@ export const RewriteView = ({
         }
     }, [defaultTargetLang])
 
-    const handleGenerate = () => {
+    const handleGenerate = useCallback(() => {
         if (!apiKey) return
         // Combine tone with grammar if checked
         const effectiveTone = fixGrammar ? `Fix Grammar & ${tone}` : tone
         generate(inputText, { mode: "rewrite", tone: effectiveTone, targetLang })
-    }
+    }, [apiKey, fixGrammar, tone, generate, inputText, targetLang])
 
-    const handleCopy = () => {
+    const handleCopy = useCallback(() => {
         if (!data || isLoading) return
         navigator.clipboard.writeText(data)
         setIsCopied(true)
         setTimeout(() => setIsCopied(false), 2000)
-    }
+    }, [data, isLoading])
+
+    const handleReplace = useCallback(() => {
+        if (onReplace && data) {
+            onReplace(data)
+        }
+    }, [onReplace, data])
+
+    const handleNewRewrite = useCallback(() => {
+        setInputText("")
+        reset()
+    }, [reset])
+
+    // Memoize options to prevent unnecessary re-renders of list items
+    const toneOptions = useMemo(() => (
+        TONES.map((t) => (
+            <option key={t} value={t} className="plasmo-text-black">
+                {t}
+            </option>
+        ))
+    ), [])
+
+    const langOptions = useMemo(() => (
+        SUPPORTED_LANGUAGES.map(lang => (
+            <option key={lang} value={lang} className="plasmo-text-black">
+                {lang === "Keep Original" ? "Original Language" : lang}
+            </option>
+        ))
+    ), [])
 
     return (
         <div className="plasmo-flex plasmo-flex-col plasmo-gap-1.5 plasmo-p-2">
@@ -69,7 +110,7 @@ export const RewriteView = ({
                     <Textarea
                         ref={textareaRef}
                         value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
+                        onChange={handleInput}
                         onKeyDown={(e) => e.stopPropagation()}
                         onKeyUp={(e) => e.stopPropagation()}
                         className={`plasmo-p-2 ${radiusClass}`}
@@ -88,12 +129,9 @@ export const RewriteView = ({
                             value={tone}
                             onChange={(e) => setTone(e.target.value as Tone)}
                             disabled={isLoading}
-                            className={`plasmo-w-full plasmo-h-full plasmo-bg-gray-100/10 plasmo-text-white/90 plasmo-text-[11px] plasmo-font-bold ${selectRadiusClass} plasmo-px-2 plasmo-py-1.5 plasmo-appearance-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 hover:plasmo-bg-white/10 plasmo-transition-all plasmo-cursor-pointer disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed`}>
-                            {TONES.map((t) => (
-                                <option key={t} value={t} className="plasmo-text-black">
-                                    {t}
-                                </option>
-                            ))}
+                            className={`plasmo-w-full plasmo-h-full plasmo-bg-gray-100/10 plasmo-text-white/90 plasmo-text-[11px] plasmo-font-bold ${selectRadiusClass} plasmo-px-2 plasmo-py-1.5 plasmo-appearance-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 hover:plasmo-bg-white/10 plasmo-transition-all plasmo-cursor-pointer disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed`}
+                        >
+                            {toneOptions}
                         </select>
                         <div className="plasmo-absolute plasmo-right-1.5 plasmo-top-1/2 plasmo-transform plasmo--translate-y-1/2 plasmo-pointer-events-none">
                             <ArrowRight className="plasmo-w-2.5 plasmo-h-2.5 plasmo-text-white/50" />
@@ -106,12 +144,9 @@ export const RewriteView = ({
                             value={targetLang}
                             onChange={(e) => setTargetLang(e.target.value as SupportedLanguage)}
                             disabled={isLoading}
-                            className={`plasmo-w-full plasmo-h-full plasmo-bg-gray-100/10 plasmo-text-white/90 plasmo-text-[11px] plasmo-font-bold ${selectRadiusClass} plasmo-px-2 plasmo-py-1.5 plasmo-appearance-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 hover:plasmo-bg-white/10 plasmo-transition-all plasmo-cursor-pointer disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed`}>
-                            {SUPPORTED_LANGUAGES.map(lang => (
-                                <option key={lang} value={lang} className="plasmo-text-black">
-                                    {lang === "Keep Original" ? "Original Language" : lang}
-                                </option>
-                            ))}
+                            className={`plasmo-w-full plasmo-h-full plasmo-bg-gray-100/10 plasmo-text-white/90 plasmo-text-[11px] plasmo-font-bold ${selectRadiusClass} plasmo-px-2 plasmo-py-1.5 plasmo-appearance-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 hover:plasmo-bg-white/10 plasmo-transition-all plasmo-cursor-pointer disabled:plasmo-opacity-50 disabled:plasmo-cursor-not-allowed`}
+                        >
+                            {langOptions}
                         </select>
                         <div className="plasmo-absolute plasmo-right-1.5 plasmo-top-1/2 plasmo-transform plasmo--translate-y-1/2 plasmo-pointer-events-none">
                             <ArrowRight className="plasmo-w-2.5 plasmo-h-2.5 plasmo-text-white/50" />
@@ -172,8 +207,8 @@ export const RewriteView = ({
                         className={`plasmo-relative plasmo-p-2 ${radiusClass} plasmo-border plasmo-backdrop-blur-sm plasmo-transition-all plasmo-duration-200 plasmo-group ${isLoading
                             ? "plasmo-cursor-wait plasmo-bg-blue-500/5 plasmo-border-blue-500/10"
                             : "plasmo-cursor-pointer plasmo-bg-blue-500/10 plasmo-border-blue-500/20 hover:plasmo-bg-blue-500/20 hover:plasmo-border-blue-500/30"
-                            } ${isCopied ? "plasmo-bg-green-500/10 plasmo-border-green-500/50" : ""} ${!data && !isLoading ? "plasmo-h-[80px] plasmo-flex plasmo-items-center plasmo-justify-center" : ""}`}>
-
+                            } ${isCopied ? "plasmo-bg-green-500/10 plasmo-border-green-500/50" : ""} ${!data && !isLoading ? "plasmo-h-[80px] plasmo-flex plasmo-items-center plasmo-justify-center" : ""}`}
+                    >
                         {!data && !isLoading ? (
                             <p className="plasmo-text-white/30 plasmo-text-[10px] plasmo-font-medium plasmo-italic">
                                 AI output will appear here...
@@ -214,18 +249,17 @@ export const RewriteView = ({
                             </Button>
                             {onReplace ? (
                                 <button
-                                    onClick={() => onReplace(data || "")}
-                                    className={`plasmo-flex-[2] plasmo-bg-green-500 hover:plasmo-bg-green-400 plasmo-text-white plasmo-py-2 ${radiusClass} plasmo-font-bold plasmo-text-[10px] plasmo-shadow-lg plasmo-shadow-green-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98]`}>
+                                    onClick={handleReplace}
+                                    className={`plasmo-flex-[2] plasmo-bg-green-500 hover:plasmo-bg-green-400 plasmo-text-white plasmo-py-2 ${radiusClass} plasmo-font-bold plasmo-text-[10px] plasmo-shadow-lg plasmo-shadow-green-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98]`}
+                                >
                                     <Sparkles className="plasmo-w-3 plasmo-h-3" />
                                     Replace Text
                                 </button>
                             ) : (
                                 <button
-                                    onClick={() => {
-                                        setInputText("")
-                                        reset()
-                                    }}
-                                    className={`plasmo-flex-[2] plasmo-bg-purple-500 hover:plasmo-bg-purple-400 plasmo-text-white plasmo-py-2 ${radiusClass} plasmo-font-bold plasmo-text-[10px] plasmo-shadow-lg plasmo-shadow-purple-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98]`}>
+                                    onClick={handleNewRewrite}
+                                    className={`plasmo-flex-[2] plasmo-bg-purple-500 hover:plasmo-bg-purple-400 plasmo-text-white plasmo-py-2 ${radiusClass} plasmo-font-bold plasmo-text-[10px] plasmo-shadow-lg plasmo-shadow-purple-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98]`}
+                                >
                                     <Sparkles className="plasmo-w-3 plasmo-h-3" />
                                     New Rewrite
                                 </button>

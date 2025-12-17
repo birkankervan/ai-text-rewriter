@@ -1,7 +1,7 @@
 import { Storage } from "@plasmohq/storage"
 import type { LLMRequestOptions } from "~lib/llm-types"
 import { getSystemPrompt, getTemperature } from "~lib/prompt-utils"
-import { API_ENDPOINTS } from "~lib/constants"
+import { API_ENDPOINTS, DEFAULTS } from "~lib/constants"
 
 const storage = new Storage()
 
@@ -159,14 +159,7 @@ export class LLMService {
         if (!strategy) throw new Error(`Unsupported provider: ${providerName}`)
 
         const modelKey = `${providerName}_model`
-        // Default models fallback
-        const defaultModels: Record<string, string> = {
-            openrouter: "google/gemini-2.0-flash-exp:free",
-            openai: "gpt-4o-mini",
-            gemini: "gemini-1.5-flash",
-            groq: "llama3-8b-8192"
-        }
-        const model = await storage.get(modelKey) || defaultModels[providerName]
+        const model = await storage.get(modelKey) || DEFAULTS[providerName as keyof typeof DEFAULTS]
 
         const systemPrompt = getSystemPrompt(options)
         const temperature = getTemperature(options.mode)

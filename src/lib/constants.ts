@@ -70,3 +70,16 @@ export const LANGUAGE_TO_CODE: Record<string, string> = {
     "Georgian": "ka"
 }
 
+export const PROVIDERS = [
+    { id: "openrouter", name: "OpenRouter", description: "Access top models like GPT-4, Claude 3, and Llama 3 via one API." },
+    { id: "openai", name: "OpenAI", description: "Direct access to GPT-4 and GPT-3.5 Turbo models." },
+    { id: "gemini", name: "Google Gemini", description: "Google's latest multimodal models including Gemini 1.5 Pro/Flash." },
+    { id: "groq", name: "Groq", description: "Ultra-fast inference for open-source models like Llama 3 and Mixtral." }
+] as const
+
+export const DEFAULTS = {
+    openrouter: "google/gemini-2.0-flash-exp:free",
+    openai: "gpt-4o-mini",
+    gemini: "gemini-1.5-flash",
+    groq: "llama3-8b-8192"
+} as const

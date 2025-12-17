@@ -1,7 +1,99 @@
-import { useEffect, useState, useRef } from "react"
-import { VariableSizeList as List } from "react-window"
+import { useEffect, useState, useRef, useMemo, useCallback, memo } from "react"
+import { VariableSizeList as List, areEqual } from "react-window"
 import { historyService, type HistoryItem } from "~services/history"
 import { Trash2, Search, ChevronDown, ChevronUp } from "lucide-react"
+
+// Types for Row Data
+interface RowData {
+    items: HistoryItem[];
+    expandedIds: Set<number>;
+    toggleExpand: (index: number) => void;
+}
+
+// Expandable Text Component
+const ExpandableText = ({ label, text, isExpanded }: { label: string, text: string, isExpanded: boolean }) => (
+    <div className="plasmo-flex plasmo-flex-col plasmo-gap-1 plasmo-min-w-0">
+        <span className="plasmo-text-[10px] plasmo-font-semibold plasmo-text-slate-400">{label}</span>
+        <div className={`plasmo-text-slate-700 dark:plasmo-text-slate-300 plasmo-text-xs plasmo-leading-relaxed ${isExpanded ? "plasmo-whitespace-pre-wrap" : "plasmo-truncate"}`} title={!isExpanded ? text : undefined}>
+            {text}
+        </div>
+    </div>
+)
+
+// Memoized Row Component
+const Row = memo(({ index, style, data }: { index: number, style: React.CSSProperties, data: RowData }) => {
+    const { items, expandedIds, toggleExpand } = data
+    const item = items[index]
+    const isExpanded = expandedIds.has(index)
+
+    const date = new Intl.DateTimeFormat('default', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+    }).format(new Date(item.timestamp))
+
+    return (
+        <div style={style} className="plasmo-flex plasmo-flex-col plasmo-border-b plasmo-border-slate-100 dark:plasmo-border-slate-700/50 hover:plasmo-bg-slate-50 dark:hover:plasmo-bg-slate-800/50 plasmo-transition-colors">
+            <div className="plasmo-flex plasmo-items-start plasmo-h-full">
+                {/* Type & Date */}
+                <div className="plasmo-w-32 plasmo-p-3 plasmo-flex plasmo-flex-col plasmo-gap-1 plasmo-shrink-0">
+                    <span className={`plasmo-inline-flex plasmo-items-center plasmo-px-2 plasmo-py-0.5 plasmo-rounded-full plasmo-text-[10px] plasmo-font-medium plasmo-w-fit ${item.type === 'translate'
+                        ? 'plasmo-bg-blue-100 plasmo-text-blue-700 dark:plasmo-bg-blue-900/30 dark:plasmo-text-blue-300'
+                        : 'plasmo-bg-purple-100 plasmo-text-purple-700 dark:plasmo-bg-purple-900/30 dark:plasmo-text-purple-300'
+                        }`}>
+                        {item.type === 'translate' ? 'Translate' : 'Rewrite'}
+                    </span>
+                    <span className="plasmo-text-slate-400 dark:plasmo-text-slate-500 plasmo-text-[10px]">{date}</span>
+                </div>
+
+                {/* Content */}
+                <div className="plasmo-flex-1 plasmo-p-3 plasmo-grid plasmo-grid-cols-2 plasmo-gap-4 plasmo-min-w-0">
+                    <ExpandableText label="Original" text={item.original} isExpanded={isExpanded} />
+                    <ExpandableText label="Result" text={item.result} isExpanded={isExpanded} />
+                </div>
+
+                {/* Details & Toggle */}
+                <div className="plasmo-w-48 plasmo-p-3 plasmo-border-l plasmo-border-slate-100 dark:plasmo-border-slate-700/50 plasmo-shrink-0 plasmo-flex plasmo-flex-col plasmo-gap-2 plasmo-h-full">
+                    <div className="plasmo-flex plasmo-flex-col plasmo-gap-1">
+                        <div className="plasmo-flex plasmo-items-center plasmo-gap-1">
+                            <span className="plasmo-text-slate-500 dark:plasmo-text-slate-400">{item.provider}</span>
+                            <span className="plasmo-text-slate-300">/</span>
+                            <span className="plasmo-text-slate-500 dark:plasmo-text-slate-400 plasmo-truncate" title={item.model}>{item.model}</span>
+                        </div>
+                        <div className="plasmo-flex plasmo-flex-wrap plasmo-gap-1">
+                            {item.type === 'translate' && item.translateOptions?.targetLang && (
+                                <span className="plasmo-px-1.5 plasmo-py-0.5 plasmo-rounded plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-text-slate-600 dark:plasmo-text-slate-400 plasmo-text-[10px]">
+                                    → {item.translateOptions.targetLang}
+                                </span>
+                            )}
+                            {item.type === 'rewrite' && item.rewriteOptions?.tone && (
+                                <span className="plasmo-px-1.5 plasmo-py-0.5 plasmo-rounded plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-text-slate-600 dark:plasmo-text-slate-400 plasmo-text-[10px]">
+                                    {item.rewriteOptions.tone}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => toggleExpand(index)}
+                        className="plasmo-mt-auto plasmo-flex plasmo-items-center plasmo-gap-1 plasmo-text-[10px] plasmo-font-medium plasmo-text-blue-600 dark:plasmo-text-blue-400 hover:plasmo-underline plasmo-self-start"
+                    >
+                        {isExpanded ? (
+                            <>
+                                <ChevronUp className="plasmo-w-3 plasmo-h-3" />
+                                Show Less
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown className="plasmo-w-3 plasmo-h-3" />
+                                Show More
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}, areEqual)
 
 export function HistoryTable() {
     const [history, setHistory] = useState<HistoryItem[]>([])
@@ -9,10 +101,31 @@ export function HistoryTable() {
     const [searchTerm, setSearchTerm] = useState("")
     const [activeTab, setActiveTab] = useState<"all" | "rewrite" | "translate">("all")
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
+    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+
     const listRef = useRef<List>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         loadHistory()
+    }, [])
+
+    // Resize Observer to handle dynamic container size
+    useEffect(() => {
+        if (!containerRef.current) return
+
+        const observer = new ResizeObserver(entries => {
+            const entry = entries[0]
+            if (entry) {
+                setContainerSize({
+                    width: entry.contentRect.width,
+                    height: entry.contentRect.height
+                })
+            }
+        })
+
+        observer.observe(containerRef.current)
+        return () => observer.disconnect()
     }, [])
 
     const loadHistory = async () => {
@@ -28,120 +141,51 @@ export function HistoryTable() {
         }
     }
 
-    const handleClear = async () => {
+    const handleClear = useCallback(async () => {
         if (confirm("Are you sure you want to clear all history?")) {
             await historyService.clear()
             setHistory([])
             setExpandedIds(new Set())
         }
-    }
+    }, [])
 
-    const toggleExpand = (index: number) => {
-        const newExpandedIds = new Set(expandedIds)
-        if (newExpandedIds.has(index)) {
-            newExpandedIds.delete(index)
-        } else {
-            newExpandedIds.add(index)
-        }
-        setExpandedIds(newExpandedIds)
+    const toggleExpand = useCallback((index: number) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev)
+            if (next.has(index)) {
+                next.delete(index)
+            } else {
+                next.add(index)
+            }
+            return next
+        })
+
+        // Reset row height cache for this index
         if (listRef.current) {
             listRef.current.resetAfterIndex(index)
         }
-    }
+    }, [])
 
-    const filteredHistory = history.filter(item => {
-        const matchesSearch = item.original.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.result.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredHistory = useMemo(() => {
+        return history.filter(item => {
+            const matchesSearch = item.original.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.result.toLowerCase().includes(searchTerm.toLowerCase())
 
-        const matchesTab = activeTab === "all" || item.type === activeTab
+            const matchesTab = activeTab === "all" || item.type === activeTab
 
-        return matchesSearch && matchesTab
-    })
+            return matchesSearch && matchesTab
+        })
+    }, [history, searchTerm, activeTab])
 
-    const getItemSize = (index: number) => {
+    const getItemSize = useCallback((index: number) => {
         return expandedIds.has(index) ? 300 : 100
-    }
+    }, [expandedIds])
 
-    const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
-        const item = filteredHistory[index]
-        const isExpanded = expandedIds.has(index)
-        const date = new Intl.DateTimeFormat('default', {
-            dateStyle: 'short',
-            timeStyle: 'short'
-        }).format(new Date(item.timestamp))
-
-        const ExpandableText = ({ label, text }: { label: string, text: string }) => (
-            <div className="plasmo-flex plasmo-flex-col plasmo-gap-1 plasmo-min-w-0">
-                <span className="plasmo-text-[10px] plasmo-font-semibold plasmo-text-slate-400">{label}</span>
-                <div className={`plasmo-text-slate-700 dark:plasmo-text-slate-300 plasmo-text-xs plasmo-leading-relaxed ${isExpanded ? "plasmo-whitespace-pre-wrap" : "plasmo-truncate"}`} title={!isExpanded ? text : undefined}>
-                    {text}
-                </div>
-            </div>
-        )
-
-        return (
-            <div style={style} className="plasmo-flex plasmo-flex-col plasmo-border-b plasmo-border-slate-100 dark:plasmo-border-slate-700/50 hover:plasmo-bg-slate-50 dark:hover:plasmo-bg-slate-800/50 plasmo-transition-colors">
-                <div className="plasmo-flex plasmo-items-start plasmo-h-full">
-                    {/* Type & Date */}
-                    <div className="plasmo-w-32 plasmo-p-3 plasmo-flex plasmo-flex-col plasmo-gap-1 plasmo-shrink-0">
-                        <span className={`plasmo-inline-flex plasmo-items-center plasmo-px-2 plasmo-py-0.5 plasmo-rounded-full plasmo-text-[10px] plasmo-font-medium plasmo-w-fit ${item.type === 'translate'
-                            ? 'plasmo-bg-blue-100 plasmo-text-blue-700 dark:plasmo-bg-blue-900/30 dark:plasmo-text-blue-300'
-                            : 'plasmo-bg-purple-100 plasmo-text-purple-700 dark:plasmo-bg-purple-900/30 dark:plasmo-text-purple-300'
-                            }`}>
-                            {item.type === 'translate' ? 'Translate' : 'Rewrite'}
-                        </span>
-                        <span className="plasmo-text-slate-400 dark:plasmo-text-slate-500 plasmo-text-[10px]">{date}</span>
-                    </div>
-
-                    {/* Content */}
-                    <div className="plasmo-flex-1 plasmo-p-3 plasmo-grid plasmo-grid-cols-2 plasmo-gap-4 plasmo-min-w-0">
-                        <ExpandableText label="Original" text={item.original} />
-                        <ExpandableText label="Result" text={item.result} />
-                    </div>
-
-                    {/* Details & Toggle */}
-                    <div className="plasmo-w-48 plasmo-p-3 plasmo-border-l plasmo-border-slate-100 dark:plasmo-border-slate-700/50 plasmo-shrink-0 plasmo-flex plasmo-flex-col plasmo-gap-2 plasmo-h-full">
-                        <div className="plasmo-flex plasmo-flex-col plasmo-gap-1">
-                            <div className="plasmo-flex plasmo-items-center plasmo-gap-1">
-                                <span className="plasmo-text-slate-500 dark:plasmo-text-slate-400">{item.provider}</span>
-                                <span className="plasmo-text-slate-300">/</span>
-                                <span className="plasmo-text-slate-500 dark:plasmo-text-slate-400 plasmo-truncate" title={item.model}>{item.model}</span>
-                            </div>
-                            <div className="plasmo-flex plasmo-flex-wrap plasmo-gap-1">
-                                {item.type === 'translate' && item.translateOptions?.targetLang && (
-                                    <span className="plasmo-px-1.5 plasmo-py-0.5 plasmo-rounded plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-text-slate-600 dark:plasmo-text-slate-400 plasmo-text-[10px]">
-                                        → {item.translateOptions.targetLang}
-                                    </span>
-                                )}
-                                {item.type === 'rewrite' && item.rewriteOptions?.tone && (
-                                    <span className="plasmo-px-1.5 plasmo-py-0.5 plasmo-rounded plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-text-slate-600 dark:plasmo-text-slate-400 plasmo-text-[10px]">
-                                        {item.rewriteOptions.tone}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => toggleExpand(index)}
-                            className="plasmo-mt-auto plasmo-flex plasmo-items-center plasmo-gap-1 plasmo-text-[10px] plasmo-font-medium plasmo-text-blue-600 dark:plasmo-text-blue-400 hover:plasmo-underline plasmo-self-start"
-                        >
-                            {isExpanded ? (
-                                <>
-                                    <ChevronUp className="plasmo-w-3 plasmo-h-3" />
-                                    Show Less
-                                </>
-                            ) : (
-                                <>
-                                    <ChevronDown className="plasmo-w-3 plasmo-h-3" />
-                                    Show More
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
+    const itemData = useMemo(() => ({
+        items: filteredHistory,
+        expandedIds,
+        toggleExpand
+    }), [filteredHistory, expandedIds, toggleExpand])
 
     return (
         <div className="plasmo-flex plasmo-flex-col plasmo-h-full plasmo-bg-white dark:plasmo-bg-slate-900 plasmo-rounded-xl plasmo-border plasmo-border-slate-200 dark:plasmo-border-slate-700 plasmo-overflow-hidden">
@@ -201,7 +245,7 @@ export function HistoryTable() {
             </div>
 
             {/* List */}
-            <div className="plasmo-flex-1">
+            <div className="plasmo-flex-1" ref={containerRef}>
                 {isLoading ? (
                     <div className="plasmo-flex plasmo-items-center plasmo-justify-center plasmo-h-full plasmo-text-slate-400 plasmo-text-sm">
                         Loading history...
@@ -212,12 +256,13 @@ export function HistoryTable() {
                         <p className="plasmo-text-sm">No history found</p>
                     </div>
                 ) : (
-                    <List
+                    containerSize.height > 0 && <List
                         ref={listRef}
-                        height={500} // This should be dynamic or fill parent
+                        height={containerSize.height}
                         itemCount={filteredHistory.length}
                         itemSize={getItemSize}
-                        width="100%"
+                        width={containerSize.width}
+                        itemData={itemData}
                         className="plasmo-scrollbar-thin"
                     >
                         {Row}
