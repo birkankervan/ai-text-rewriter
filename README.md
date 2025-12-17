@@ -1,36 +1,47 @@
 # Smart Translate & Rewrite
 
-**Smart Translate & Rewrite** is a powerful browser extension designed to enhance your writing and reading experience specifically for the web. Whether you need to polish an email, fix grammar in a form, or translate a foreign article, this tool integrates seamlessly into your browsing workflow.
+> **The privacy-first AI writing assistant for your browser.**
+> Fix grammar, paraphrase, and translate text on any website using your own API keys.
 
-Built with [Plasmo](https://docs.plasmo.com/), React, and TypeScript.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Plasmo](https://img.shields.io/badge/Plasmo-Framework-purple)
 
-## 🚀 Key Features
+## 📖 Overview
+
+**Smart Translate & Rewrite** brings the power of advanced AI models (GPT-4, Claude 3.5, Gemini, Llama 3) directly into your browsing workflow. Unlike other tools that require expensive subscriptions, this extension allows you to **Bring Your Own Key (BYOK)**, ensuring you only pay for what you use while keeping your data private.
+
+Whether you are crafting a professional email, fixing grammar in a form, or reading foreign content, Smart Translate & Rewrite helps you communicate effectively and fluently.
+
+## ✨ Key Features
 
 ### ✍️ Intelligent Rewriting
-- **Context-Aware**: Automatically detects when you are typing in an input field or textarea.
-- **Floating Rewrite Button**: Appears unobtrusively when you select editable text.
-- **Multiple Modes**:
-  - **Fix Grammar**: Corrects errors without changing the style.
-  - **Professional**: Makes text more formal and polished.
-  - **Casual**: Relaxes the tone for friendly communication.
-  - **Shorter/Longer**: Adjusts the length of your text.
-- **Direct Replacement**: Instantly replaces selected text with the AI-generated version.
+Transform your writing instantly by selecting text in any input field:
+- **Fix Grammar**: Correct typos and grammatical errors without changing your intent.
+- **Professional Mode**: Polish your tone for business communications.
+- **Casual Mode**: Relax the tone for friendly chats.
+- **Paraphrase**: Rewrite content to sound fresh and unique.
+- **Adjust Length**: Shorten verbose paragraphs or expand on simple ideas.
 
 ### 🌐 Seamless Translation
-- **Instant Translation**: Select any static text on a webpage to see the "Translate" button.
-- **Pop-up Interface**: View translations in a clean, draggable modal without leaving the page.
-- **Language Detection**: Automatically detects the source language.
+Read the web in your language without losing context:
+- **Instant Pop-up**: Select any text on a page to see the "Translate" button.
+- **In-Context View**: View translations in a clean, draggable modal right next to the original text.
+- **Auto-Detection**: Automatically identifies the source language.
 
-### 🧠 Multi-LLM Support
-Connect your preferred AI provider. We strictly use your own API keys for privacy and control:
-- **OpenRouter** (Recommended for access to Claude, GPT-4, etc.)
-- **OpenAI** (GPT-4o, GPT-3.5)
-- **Google Gemini** (Flash, Pro)
-- **Groq** (Llama 3, Mixtral - High speed)
+### 🔒 Privacy-First & Secure
+Your data stays yours. We believe in total transparency:
+- **Bring Your Own Key (BYOK)**: Connect directly to OpenAI, Google Gemini, Groq, or OpenRouter.
+- **Local Storage**: Your API keys and history are stored **locally** on your device.
+- **No Middleman**: Requests go directly from your browser to the AI provider. We do not track your usage.
 
-### 💾 History & Privacy
-- **Local History**: All rewrites and translations are saved locally on your device using IndexedDB.
-- **Privacy First**: Your API keys are stored in your browser's local storage and are never sent to any third-party server other than the AI provider you interact with.
+### 🧠 Multi-Model Support
+Choose the smartest models for your needs:
+- **OpenRouter** (Access to Claude 3.5 Sonnet, GPT-4o, etc.)
+- **OpenAI** (GPT-4o, GPT-3.5 Turbo)
+- **Google Gemini** (Gemini 1.5 Pro, Flash)
+- **Groq** (Llama 3, Mixtral - Ultra fast)
 
 ## 🛠️ Tech Stack
 
@@ -46,7 +57,7 @@ Connect your preferred AI provider. We strictly use your own API keys for privac
 - Node.js (v18+)
 - pnpm (recommended) or npm
 
-### Development Steps
+### Development Setup
 
 1. **Clone the repository**
    ```bash
@@ -64,7 +75,7 @@ Connect your preferred AI provider. We strictly use your own API keys for privac
    pnpm dev
    ```
    - This will watch for file changes and rebuild automatically.
-   - Load the unpacked extension in Chrome from `build/chrome-mv3-dev`.
+   - Load the unpacked extension in Chrome/Brave/Edge from `build/chrome-mv3-dev`.
 
 4. **Build for Production**
    ```bash
@@ -74,13 +85,13 @@ Connect your preferred AI provider. We strictly use your own API keys for privac
 
 ## ⚙️ Configuration
 
-1. After installing the extension, right-click the extension icon and select **Options**.
+1. After installing, right-click the extension icon and select **Options**.
 2. **Provider Setup**:
-   - Select your preferred "Active Provider" (e.g., OpenRouter).
-   - Enter your API Key for that provider and click "Save".
+   - Select your "Active Provider" (e.g., OpenRouter).
+   - Enter your API Key and click **Save**.
 3. **Preferences**:
-   - Set your default target languages for rewriting and translation.
-   - Choose specific models for each provider if desired.
+   - Set your default target languages.
+   - Choose specific models for each provider (e.g., forcing `gpt-4o`).
 
 ## 🤝 Contributing
 
