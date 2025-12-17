@@ -1,5 +1,5 @@
 import cssText from "data-text:~style.css"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Storage } from "@plasmohq/storage"
 import type { PlasmoCSConfig } from "plasmo"
@@ -30,7 +30,7 @@ const isEditableElement = (element: Element | null): boolean => {
   if (!element) return false
   const tagName = element.tagName.toLowerCase()
   const isInput = tagName === "input" || tagName === "textarea"
-  const isContentEditable = element.getAttribute("contenteditable") === "true"
+  const isContentEditable = (element as HTMLElement).isContentEditable
 
   if (isInput) {
     const input = element as HTMLInputElement | HTMLTextAreaElement
@@ -38,6 +38,20 @@ const isEditableElement = (element: Element | null): boolean => {
   }
 
   return isContentEditable
+}
+
+const MODAL_WIDTH = 380
+const PADDING = 12
+const OFFSET_Y = 12
+
+const getClampedPosition = (x: number, y: number, screenWidth: number) => {
+  const minX = MODAL_WIDTH / 2 + PADDING
+  const maxX = screenWidth - (MODAL_WIDTH / 2) - PADDING
+
+  return {
+    x: Math.max(minX, Math.min(x, maxX)),
+    y
+  }
 }
 
 interface FloatingButtonProps {
@@ -48,7 +62,7 @@ interface FloatingButtonProps {
   onMouseEnterTranslate?: () => void
 }
 
-const FloatingButton = ({ mode, position, onRewrite, onTranslate, onMouseEnterTranslate }: FloatingButtonProps) => {
+const FloatingButton = memo(({ mode, position, onRewrite, onTranslate, onMouseEnterTranslate }: FloatingButtonProps) => {
   const isRewrite = mode === "rewrite"
 
   return (
@@ -58,7 +72,7 @@ const FloatingButton = ({ mode, position, onRewrite, onTranslate, onMouseEnterTr
         left: position.x,
         top: position.y,
         transform: "translate(-50%, -100%)",
-        marginTop: "-12px"
+        marginTop: `-${OFFSET_Y}px`
       }}
     >
       <button
@@ -93,7 +107,8 @@ const FloatingButton = ({ mode, position, onRewrite, onTranslate, onMouseEnterTr
       </button>
     </div>
   )
-}
+})
+FloatingButton.displayName = "FloatingButton"
 
 const queryClient = new QueryClient()
 
@@ -102,8 +117,9 @@ const PlasmoOverlayContent = () => {
   const [showModal, setShowModal] = useState(false)
   const [mode, setMode] = useState<"rewrite" | "translate">("translate")
   const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [targetElement, setTargetElement] = useState<HTMLInputElement | HTMLTextAreaElement | null>(null)
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null)
   const [selectedText, setSelectedText] = useState("")
+  const [selectionRange, setSelectionRange] = useState<Range | null>(null)
   const [modalPlacement, setModalPlacement] = useState<"top" | "bottom">("bottom")
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -129,7 +145,7 @@ const PlasmoOverlayContent = () => {
   const { generate, data: prefetchedData, isLoading: isPrefetching } = useStream()
   const [hasPrefetched, setHasPrefetched] = useState(false)
 
-  const handleMouseEnterTranslate = async () => {
+  const handleMouseEnterTranslate = useCallback(async () => {
     if (mode === "translate" && selectedText && !hasPrefetched && !showModal) {
       const storage = new Storage()
       const defaultLang = await storage.get("default_lang_translate") as SupportedLanguage || "English"
@@ -140,7 +156,7 @@ const PlasmoOverlayContent = () => {
       // Enable autoSaveHistory for prefetch - it will save when complete
       generate(selectedText, { mode: "translate", targetLang: defaultLang }, true)
     }
-  }
+  }, [mode, selectedText, hasPrefetched, showModal, generate])
 
   const handleSelection = useCallback(() => {
     if (showModal) return // Don't update selection while modal is open
@@ -186,6 +202,14 @@ const PlasmoOverlayContent = () => {
 
       setMode(editable ? "rewrite" : "translate")
 
+      // If it's a contenteditable element, capture the range
+      if (editable && !isInputSelection && selection && selection.rangeCount > 0) {
+        setSelectionRange(selection.getRangeAt(0).cloneRange())
+        setTargetElement(activeElement as HTMLElement)
+      } else {
+        setSelectionRange(null)
+      }
+
       let rect: DOMRect | null = null
 
       if (editable && isInputSelection) {
@@ -197,7 +221,7 @@ const PlasmoOverlayContent = () => {
 
       if (rect) {
         const x = rect.left + rect.width / 2
-        const y = rect.top - 12
+        const y = rect.top - OFFSET_Y
 
         setPosition({ x, y })
 
@@ -214,26 +238,49 @@ const PlasmoOverlayContent = () => {
     }, 150)
   }, [showModal, selectedText])
 
-  const handleReplace = (newText: string) => {
+  const handleReplace = useCallback((newText: string) => {
     if (targetElement) {
-      const start = targetElement.selectionStart
-      const end = targetElement.selectionEnd
-      const originalText = targetElement.value
+      if ((targetElement.tagName === "INPUT" || targetElement.tagName === "TEXTAREA") && 'value' in targetElement) {
+        const input = targetElement as HTMLInputElement | HTMLTextAreaElement
+        const start = input.selectionStart
+        const end = input.selectionEnd
+        const originalText = input.value
 
-      // Replace only the selected part
-      const updatedText = originalText.substring(0, start!) + newText + originalText.substring(end!)
+        // Replace only the selected part
+        const updatedText = originalText.substring(0, start!) + newText + originalText.substring(end!)
 
-      targetElement.value = updatedText
+        input.value = updatedText
 
-      // Dispatch events to ensure frameworks pick up the change
-      targetElement.dispatchEvent(new Event('input', { bubbles: true }))
-      targetElement.dispatchEvent(new Event('change', { bubbles: true }))
+        // Dispatch events to ensure frameworks pick up the change
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+        input.dispatchEvent(new Event('change', { bubbles: true }))
+      } else if (targetElement.isContentEditable && selectionRange) {
+        try {
+          const selection = window.getSelection()
+          selection?.removeAllRanges()
+          selection?.addRange(selectionRange)
+
+          // Attempt to use execCommand for better compatibility (undo stack, etc.)
+          const success = document.execCommand("insertText", false, newText)
+
+          if (!success) {
+            // Fallback: Delete contents and insert text node
+            selectionRange.deleteContents()
+            selectionRange.insertNode(document.createTextNode(newText))
+
+            // Dispatch input event for frameworks
+            targetElement.dispatchEvent(new Event('input', { bubbles: true }))
+          }
+        } catch (e) {
+          console.error("Failed to replace text in contenteditable:", e)
+        }
+      }
 
       setShowModal(false)
       setIsVisible(false)
       setHasPrefetched(false)
     }
-  }
+  }, [targetElement, selectionRange])
 
   useEffect(() => {
     document.addEventListener("mouseup", handleSelection)
@@ -246,19 +293,29 @@ const PlasmoOverlayContent = () => {
     }
   }, [handleSelection])
 
+  // Memoize modal position to prevent recalculation on every render
+  const clampedPosition = useMemo(() =>
+    getClampedPosition(position.x, position.y, window.innerWidth),
+    [position.x, position.y]
+  )
+
+  const handleOpenModal = useCallback(() => setShowModal(true), [])
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+    setIsVisible(false)
+    setHasPrefetched(false)
+  }, [])
+
   if (!isVisible) return null
 
   if (showModal) {
     return (
       <TranslationModal
         isOpen={showModal}
-        onClose={() => {
-          setShowModal(false)
-          setIsVisible(false)
-          setHasPrefetched(false)
-        }}
+        onClose={handleCloseModal}
         initialText={selectedText}
-        position={position}
+        position={clampedPosition}
         placement={modalPlacement}
         initialMode={mode}
         onReplace={targetElement ? handleReplace : undefined}
@@ -273,8 +330,8 @@ const PlasmoOverlayContent = () => {
     <FloatingButton
       mode={mode}
       position={position}
-      onRewrite={() => setShowModal(true)}
-      onTranslate={() => setShowModal(true)}
+      onRewrite={handleOpenModal}
+      onTranslate={handleOpenModal}
       onMouseEnterTranslate={handleMouseEnterTranslate}
     />
   )

@@ -58,6 +58,15 @@ export const TranslationModal = ({
 
     if (!isOpen) return null
 
+    // Calculate available height based on position
+    const padding = 24
+    const availableHeight = placement === "top"
+        ? position.y - padding
+        : window.innerHeight - position.y - padding
+
+    // Cap at 85vh to maintain some margin in best-case scenarios
+    const maxHeight = Math.min(availableHeight, window.innerHeight * 0.85)
+
     return (
         <>
             {/* Click-Outside Overlay */}
@@ -75,31 +84,36 @@ export const TranslationModal = ({
                     transform: `translate(-50%, ${placement === "top" ? "-100%" : "0"})`,
                     marginTop: placement === "bottom" ? "12px" : "0",
                     marginBottom: placement === "top" ? "12px" : "0",
+                    maxHeight: `${maxHeight}px`,
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif'
                 }}>
 
-                {isSettingsLoaded ? (
-                    initialMode === "translate" ? (
-                        <TranslateView
-                            initialText={initialText}
-                            apiKey={apiKey}
-                            defaultTargetLang={defaultTranslateLang}
-                            prefetchedData={prefetchedData}
-                            prefetchedIsLoading={prefetchedIsLoading}
-                        />
+                <div className="plasmo-overflow-y-auto plasmo-flex-1 plasmo-w-full custom-scrollbar">
+                    {isSettingsLoaded ? (
+                        initialMode === "translate" ? (
+                            <TranslateView
+                                initialText={initialText}
+                                apiKey={apiKey}
+                                defaultTargetLang={defaultTranslateLang}
+                                prefetchedData={prefetchedData}
+                                prefetchedIsLoading={prefetchedIsLoading}
+                            />
+                        ) : (
+                            <RewriteView
+                                initialText={initialText}
+                                onReplace={onReplace}
+                                apiKey={apiKey}
+                                defaultTargetLang={defaultRewriteLang}
+                                radiusClass="plasmo-rounded-2xl"
+                                selectRadiusClass="plasmo-rounded-xl"
+                            />
+                        )
                     ) : (
-                        <RewriteView
-                            initialText={initialText}
-                            onReplace={onReplace}
-                            apiKey={apiKey}
-                            defaultTargetLang={defaultRewriteLang}
-                        />
-                    )
-                ) : (
-                    <div className="plasmo-p-8 plasmo-flex plasmo-items-center plasmo-justify-center">
-                        <Loader2 className="plasmo-w-6 plasmo-h-6 plasmo-text-white/30 plasmo-animate-spin" />
-                    </div>
-                )}
+                        <div className="plasmo-p-8 plasmo-flex plasmo-items-center plasmo-justify-center">
+                            <Loader2 className="plasmo-w-6 plasmo-h-6 plasmo-text-white/30 plasmo-animate-spin" />
+                        </div>
+                    )}
+                </div>
             </div>
         </>
     )
