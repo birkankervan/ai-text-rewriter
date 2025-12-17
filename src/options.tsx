@@ -61,19 +61,20 @@ function DefaultLanguageSelector({ label, storageKey, defaultValue }: { label: s
 }
 
 // Helper Component: Translation Provider Selector
-function TranslationProviderSelector() {
+function TranslationProviderSelector({ hasAnyKey }: { hasAnyKey: boolean }) {
     const [provider, setProvider] = useState<TranslationProvider>("free")
     const [saved, setSaved] = useState(false)
 
     useEffect(() => {
-        const loadProvider = async () => {
+        const loadData = async () => {
             const stored = await storage.get("preferred_translation_provider") as TranslationProvider
             if (stored) setProvider(stored)
         }
-        loadProvider()
+        loadData()
     }, [])
 
     const handleChange = async (newProvider: TranslationProvider) => {
+        if (newProvider === "ai" && !hasAnyKey) return
         setProvider(newProvider)
         await storage.set("preferred_translation_provider", newProvider)
         setSaved(true)
@@ -92,16 +93,20 @@ function TranslationProviderSelector() {
             <div className="plasmo-grid plasmo-grid-cols-2 plasmo-gap-3 plasmo-p-1 plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-rounded-xl">
                 <button
                     onClick={() => handleChange("ai")}
-                    className={`plasmo-p-4 plasmo-rounded-lg plasmo-transition-all plasmo-text-left ${provider === "ai"
-                        ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-shadow-md plasmo-border-2 plasmo-border-blue-500"
-                        : "plasmo-bg-transparent hover:plasmo-bg-white/50 dark:hover:plasmo-bg-slate-700/50 plasmo-border-2 plasmo-border-transparent"
+                    disabled={!hasAnyKey}
+                    title={!hasAnyKey ? "Add an API key first to use AI translations" : "Use AI for high-quality translations"}
+                    className={`plasmo-p-4 plasmo-rounded-lg plasmo-transition-all plasmo-text-left plasmo-relative ${!hasAnyKey
+                        ? "plasmo-opacity-50 plasmo-cursor-not-allowed plasmo-bg-slate-200/50 dark:plasmo-bg-slate-700/30 plasmo-border-2 plasmo-border-dashed plasmo-border-slate-300 dark:plasmo-border-slate-600"
+                        : provider === "ai"
+                            ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-shadow-md plasmo-border-2 plasmo-border-blue-500"
+                            : "plasmo-bg-transparent hover:plasmo-bg-white/50 dark:hover:plasmo-bg-slate-700/50 plasmo-border-2 plasmo-border-transparent"
                         }`}>
                     <div className="plasmo-flex plasmo-items-center plasmo-gap-2 plasmo-mb-1">
-                        <span className="plasmo-text-base">🤖</span>
-                        <span className="plasmo-font-semibold plasmo-text-sm plasmo-text-slate-900 dark:plasmo-text-white">AI Models</span>
+                        <span className="plasmo-text-base">{hasAnyKey ? "🤖" : "🔒"}</span>
+                        <span className={`plasmo-font-semibold plasmo-text-sm ${hasAnyKey ? "plasmo-text-slate-900 dark:plasmo-text-white" : "plasmo-text-slate-400"}`}>AI Models</span>
                     </div>
-                    <p className="plasmo-text-xs plasmo-text-slate-500 dark:plasmo-text-slate-400">
-                        High quality, requires API key
+                    <p className={`plasmo-text-xs ${hasAnyKey ? "plasmo-text-slate-500 dark:plasmo-text-slate-400" : "plasmo-text-slate-400"}`}>
+                        {hasAnyKey ? "High quality, requires API key" : "Add API key to enable"}
                     </p>
                 </button>
 
@@ -216,7 +221,46 @@ function OptionsContent() {
         await storage.set(`${providerId}_key`, value)
 
         // Update existence state
-        setKeyExists(prev => ({ ...prev, [providerId]: !!value }))
+        const newKeyExists = { ...keyExists, [providerId]: !!value }
+        setKeyExists(newKeyExists)
+
+        // AUTO-SELECT LOGIC: If we just saved a NEW key
+        if (value) {
+            // Check how many keys existed BEFORE this save
+            const previousKeyCount = Object.values(keyExists).filter(Boolean).length
+            const isFirstKey = previousKeyCount === 0
+
+            // Auto-switch to this provider
+            setActiveProvider(providerId)
+            await storage.set("active_provider", providerId)
+
+            // Set default model for this provider
+            const defaultModel = DEFAULTS[providerId as keyof typeof DEFAULTS]
+            setModel(defaultModel)
+            await storage.set(`${providerId}_model`, defaultModel)
+
+            // If first key: also set translation engine to AI
+            if (isFirstKey) {
+                await storage.set("preferred_translation_provider", "ai")
+            }
+        }
+
+        // Handle key REMOVAL: if user deletes the currently active provider's key
+        if (!value && activeProvider === providerId) {
+            // Find next provider with a key
+            const nextProvider = PROVIDERS.find(p => p.id !== providerId && newKeyExists[p.id])
+            if (nextProvider) {
+                setActiveProvider(nextProvider.id)
+                await storage.set("active_provider", nextProvider.id)
+                const nextModel = await storage.get(`${nextProvider.id}_model`) || DEFAULTS[nextProvider.id as keyof typeof DEFAULTS]
+                setModel(nextModel)
+            } else {
+                // No other keys - reset to openrouter (works without key for free models)
+                setActiveProvider("openrouter")
+                await storage.set("active_provider", "openrouter")
+                setModel(DEFAULTS.openrouter)
+            }
+        }
 
         setSavedStatus(prev => ({ ...prev, [providerId]: true }))
         setTimeout(() => {
@@ -259,6 +303,21 @@ function OptionsContent() {
 
     const currentModels = getModels()
     const loading = isLoadingModels()
+    const isModelMissing = !model || (currentModels.length > 0 && !currentModels.find((m: any) => m.id === model))
+
+    // Auto-select first model when models are loaded and no valid model is selected
+    useEffect(() => {
+        const autoSelectModel = async () => {
+            if (!loading && currentModels.length > 0 && isModelMissing) {
+                const firstModel = currentModels[0]
+                if (firstModel) {
+                    setModel(firstModel.id)
+                    await storage.set(`${activeProvider}_model`, firstModel.id)
+                }
+            }
+        }
+        autoSelectModel()
+    }, [currentModels, loading, activeProvider])
 
     return (
         <div className="plasmo-min-h-screen plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-slate-900 dark:plasmo-text-slate-100 plasmo-flex" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif' }}>
@@ -384,7 +443,7 @@ function OptionsContent() {
 
                                     {/* Translation Engine Preference */}
                                     <div className="plasmo-pt-4 plasmo-border-t plasmo-border-slate-100 dark:plasmo-border-slate-800">
-                                        <TranslationProviderSelector />
+                                        <TranslationProviderSelector hasAnyKey={Object.values(keyExists).some(Boolean)} />
                                     </div>
                                 </div>
                             </div>
@@ -403,46 +462,84 @@ function OptionsContent() {
                                     </div>
                                 </div>
 
-                                <div className="plasmo-p-6 plasmo-grid plasmo-grid-cols-1 md:plasmo-grid-cols-2 plasmo-gap-6">
-                                    <div className="plasmo-flex plasmo-flex-col plasmo-gap-2">
-                                        <label className="plasmo-text-sm plasmo-font-medium plasmo-text-slate-700 dark:plasmo-text-slate-300">
-                                            Provider
-                                        </label>
-                                        <select
-                                            value={activeProvider}
-                                            onChange={(e) => handleActiveProviderChange(e.target.value)}
-                                            className="plasmo-w-full plasmo-p-3 plasmo-rounded-xl plasmo-border plasmo-border-slate-200 dark:plasmo-border-slate-700 plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-sm focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-blue-500/20 plasmo-transition-all">
-                                            {PROVIDERS.map(p => (
-                                                <option key={p.id} value={p.id} disabled={!keyExists[p.id]}>
-                                                    {p.name} {!keyExists[p.id] ? "(No Key Set)" : ""}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <p className="plasmo-text-xs plasmo-text-slate-500">
-                                            Only providers with saved keys can be selected.
-                                        </p>
-                                    </div>
+                                <div className="plasmo-p-6 plasmo-flex plasmo-flex-col plasmo-gap-6">
+                                    {/* No API Key Warning */}
+                                    {!Object.values(keyExists).some(Boolean) && (
+                                        <div className="plasmo-p-4 plasmo-rounded-xl plasmo-bg-gradient-to-r plasmo-from-amber-500/10 plasmo-to-orange-500/10 plasmo-border plasmo-border-amber-500/30">
+                                            <div className="plasmo-flex plasmo-items-start plasmo-gap-3">
+                                                <div className="plasmo-p-2 plasmo-bg-amber-500/20 plasmo-rounded-lg plasmo-mt-0.5">
+                                                    <Key className="plasmo-w-4 plasmo-h-4 plasmo-text-amber-500" />
+                                                </div>
+                                                <div className="plasmo-flex plasmo-flex-col plasmo-gap-1">
+                                                    <h3 className="plasmo-font-semibold plasmo-text-amber-600 dark:plasmo-text-amber-400 plasmo-text-sm">API Key Required</h3>
+                                                    <p className="plasmo-text-xs plasmo-text-slate-600 dark:plasmo-text-slate-400 plasmo-leading-relaxed">
+                                                        <strong>Rewrite</strong> always requires an API key to function.
+                                                        <br />
+                                                        <strong>Translate</strong> can use free Google Translate, but for AI-powered translations, a key is needed.
+                                                    </p>
+                                                    <p className="plasmo-text-xs plasmo-text-amber-600 dark:plasmo-text-amber-400 plasmo-font-medium plasmo-mt-1">
+                                                        👇 Add your API key in the section below to get started.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
-                                    <div className="plasmo-flex plasmo-flex-col plasmo-gap-2">
-                                        <label className="plasmo-text-sm plasmo-font-medium plasmo-text-slate-700 dark:plasmo-text-slate-300">
-                                            Model
-                                        </label>
-                                        <select
-                                            value={model}
-                                            onChange={(e) => handleModelChange(e.target.value)}
-                                            disabled={loading || (activeProvider !== "openrouter" && !activeKey)}
-                                            className="plasmo-w-full plasmo-p-3 plasmo-rounded-xl plasmo-border plasmo-border-slate-200 dark:plasmo-border-slate-700 plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-sm focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-blue-500/20 disabled:plasmo-opacity-50 plasmo-transition-all">
-                                            <option value="">Select a model...</option>
-                                            {loading ? (
-                                                <option>Loading models...</option>
-                                            ) : (
-                                                currentModels.map((m: any) => (
-                                                    <option key={m.id} value={m.id}>
-                                                        {m.pricing?.prompt === "0" ? "🆓 " : ""}{m.name}
+                                    <div className="plasmo-grid plasmo-grid-cols-1 md:plasmo-grid-cols-2 plasmo-gap-6">
+                                        <div className="plasmo-flex plasmo-flex-col plasmo-gap-2">
+                                            <label className={`plasmo-text-sm plasmo-font-medium ${!Object.values(keyExists).some(Boolean) ? "plasmo-text-slate-400" : "plasmo-text-slate-700 dark:plasmo-text-slate-300"}`}>
+                                                Provider
+                                            </label>
+                                            <select
+                                                value={activeProvider}
+                                                onChange={(e) => handleActiveProviderChange(e.target.value)}
+                                                disabled={!Object.values(keyExists).some(Boolean)}
+                                                className={`plasmo-w-full plasmo-p-3 plasmo-rounded-xl plasmo-border plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-sm focus:plasmo-outline-none focus:plasmo-ring-2 plasmo-transition-all ${!Object.values(keyExists).some(Boolean)
+                                                    ? "plasmo-opacity-50 plasmo-cursor-not-allowed plasmo-border-slate-300 dark:plasmo-border-slate-600"
+                                                    : "plasmo-border-slate-200 dark:plasmo-border-slate-700 focus:plasmo-ring-blue-500/20"
+                                                    }`}>
+                                                {PROVIDERS.map(p => (
+                                                    <option key={p.id} value={p.id} disabled={!keyExists[p.id]}>
+                                                        {p.name} {!keyExists[p.id] ? "(No Key Set)" : ""}
                                                     </option>
-                                                ))
-                                            )}
-                                        </select>
+                                                ))}
+                                            </select>
+                                            <p className="plasmo-text-xs plasmo-text-slate-500">
+                                                Only providers with saved keys can be selected.
+                                            </p>
+                                        </div>
+
+                                        <div className="plasmo-flex plasmo-flex-col plasmo-gap-2">
+                                            <label className={`plasmo-text-sm plasmo-font-medium ${!Object.values(keyExists).some(Boolean)
+                                                ? "plasmo-text-slate-400"
+                                                : isModelMissing && !loading
+                                                    ? "plasmo-text-red-500"
+                                                    : "plasmo-text-slate-700 dark:plasmo-text-slate-300"
+                                                }`}>
+                                                Model {isModelMissing && !loading && Object.values(keyExists).some(Boolean) && <span className="plasmo-text-xs plasmo-font-normal">— Please select a model</span>}
+                                            </label>
+                                            <select
+                                                value={model}
+                                                onChange={(e) => handleModelChange(e.target.value)}
+                                                disabled={!Object.values(keyExists).some(Boolean) || loading || (activeProvider !== "openrouter" && !activeKey)}
+                                                className={`plasmo-w-full plasmo-p-3 plasmo-rounded-xl plasmo-border plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-sm focus:plasmo-outline-none focus:plasmo-ring-2 plasmo-transition-all ${!Object.values(keyExists).some(Boolean)
+                                                    ? "plasmo-opacity-50 plasmo-cursor-not-allowed plasmo-border-slate-300 dark:plasmo-border-slate-600"
+                                                    : isModelMissing && !loading
+                                                        ? "plasmo-border-red-500 plasmo-border-2 focus:plasmo-ring-red-500/20 plasmo-animate-pulse"
+                                                        : "plasmo-border-slate-200 dark:plasmo-border-slate-700 focus:plasmo-ring-blue-500/20"
+                                                    }`}>
+                                                <option value="">⚠️ Select a model...</option>
+                                                {loading ? (
+                                                    <option>Loading models...</option>
+                                                ) : (
+                                                    currentModels.map((m: any) => (
+                                                        <option key={m.id} value={m.id}>
+                                                            {m.pricing?.prompt === "0" ? "🆓 " : ""}{m.name}
+                                                        </option>
+                                                    ))
+                                                )}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

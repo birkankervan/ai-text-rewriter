@@ -122,20 +122,23 @@ export const TranslatePopupView = ({
                     <div className="plasmo-flex plasmo-bg-black/20 plasmo-rounded-md plasmo-p-0.5 plasmo-border plasmo-border-white/5">
                         <button
                             onClick={() => setMode("ai")}
-                            disabled={isLoading}
-                            className={`plasmo-px-2 plasmo-py-1 plasmo-rounded-sm plasmo-text-[10px] plasmo-font-bold plasmo-transition-all plasmo-flex plasmo-items-center plasmo-gap-1 ${mode === "ai"
-                                    ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-sm"
-                                    : "plasmo-text-white/40 hover:plasmo-text-white/60"
+                            disabled={isLoading || !apiKey}
+                            title={!apiKey ? "Add API key in settings to use AI" : "Use AI for high-quality translation"}
+                            className={`plasmo-px-2 plasmo-py-1 plasmo-rounded-sm plasmo-text-[10px] plasmo-font-bold plasmo-transition-all plasmo-flex plasmo-items-center plasmo-gap-1 ${!apiKey
+                                    ? "plasmo-opacity-40 plasmo-cursor-not-allowed plasmo-text-white/30"
+                                    : mode === "ai"
+                                        ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-sm"
+                                        : "plasmo-text-white/40 hover:plasmo-text-white/60"
                                 }`}>
-                            <Bot className="plasmo-w-3 plasmo-h-3" />
+                            {apiKey ? <Bot className="plasmo-w-3 plasmo-h-3" /> : <span className="plasmo-text-[8px]">🔒</span>}
                             AI
                         </button>
                         <button
                             onClick={() => setMode("free")}
                             disabled={isLoading}
                             className={`plasmo-px-2 plasmo-py-1 plasmo-rounded-sm plasmo-text-[10px] plasmo-font-bold plasmo-transition-all plasmo-flex plasmo-items-center plasmo-gap-1 ${mode === "free"
-                                    ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-sm"
-                                    : "plasmo-text-white/40 hover:plasmo-text-white/60"
+                                ? "plasmo-bg-white/10 plasmo-text-white plasmo-shadow-sm"
+                                : "plasmo-text-white/40 hover:plasmo-text-white/60"
                                 }`}>
                             <Zap className="plasmo-w-3 plasmo-h-3" />
                             Free
@@ -182,8 +185,8 @@ export const TranslatePopupView = ({
                 <div
                     onClick={handleCopy}
                     className={`plasmo-relative plasmo-p-3 plasmo-rounded-lg plasmo-border plasmo-backdrop-blur-sm plasmo-transition-all plasmo-duration-200 plasmo-group plasmo-mt-1 ${isLoading
-                            ? "plasmo-cursor-wait plasmo-bg-blue-500/5 plasmo-border-blue-500/10"
-                            : "plasmo-cursor-pointer plasmo-bg-blue-500/10 plasmo-border-blue-500/20 hover:plasmo-bg-blue-500/20 hover:plasmo-border-blue-500/30"
+                        ? "plasmo-cursor-wait plasmo-bg-blue-500/5 plasmo-border-blue-500/10"
+                        : "plasmo-cursor-pointer plasmo-bg-blue-500/10 plasmo-border-blue-500/20 hover:plasmo-bg-blue-500/20 hover:plasmo-border-blue-500/30"
                         } ${isCopied ? "plasmo-bg-green-500/10 plasmo-border-green-500/50" : ""}`}>
 
                     <p className="plasmo-text-white/90 plasmo-text-xs plasmo-leading-relaxed plasmo-min-h-[20px] plasmo-pr-6 whitespace-pre-wrap">

@@ -121,12 +121,23 @@ export const RewriteView = ({
 
             {/* Action Button */}
             {!data && !isLoading && !error && (
-                <button
-                    onClick={handleGenerate}
-                    className="plasmo-w-full plasmo-bg-gradient-to-r plasmo-from-blue-500 plasmo-to-purple-600 hover:plasmo-from-blue-400 hover:plasmo-to-purple-500 plasmo-text-white plasmo-py-1.5 plasmo-rounded-lg plasmo-font-bold plasmo-text-xs plasmo-shadow-lg plasmo-shadow-blue-500/20 plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98]">
-                    <Sparkles className="plasmo-w-3 plasmo-h-3" />
-                    Generate
-                </button>
+                <>
+                    <button
+                        onClick={handleGenerate}
+                        disabled={!apiKey || !inputText.trim()}
+                        className={`plasmo-w-full plasmo-py-1.5 plasmo-rounded-lg plasmo-font-bold plasmo-text-xs plasmo-shadow-lg plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center plasmo-gap-1.5 ${!apiKey
+                                ? "plasmo-bg-gray-600/50 plasmo-text-white/50 plasmo-cursor-not-allowed plasmo-shadow-none"
+                                : "plasmo-bg-gradient-to-r plasmo-from-blue-500 plasmo-to-purple-600 hover:plasmo-from-blue-400 hover:plasmo-to-purple-500 plasmo-text-white plasmo-shadow-blue-500/20 hover:plasmo-scale-[1.01] active:plasmo-scale-[0.98]"
+                            }`}>
+                        <Sparkles className="plasmo-w-3 plasmo-h-3" />
+                        Generate
+                    </button>
+                    {!apiKey && (
+                        <p className="plasmo-text-[10px] plasmo-text-red-400 plasmo-text-center plasmo-mt-1">
+                            ⚠️ API Key required for Rewrite. Configure in settings.
+                        </p>
+                    )}
+                </>
             )}
 
             {/* Stop Button */}

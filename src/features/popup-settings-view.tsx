@@ -11,6 +11,7 @@ export const PopupSettingsView = () => {
     const [defaultTranslateLang, setDefaultTranslateLang] = useState("English")
     const [translationProvider, setTranslationProvider] = useState<TranslationProvider>("free")
     const [status, setStatus] = useState("")
+    const [hasAnyKey, setHasAnyKey] = useState(false)
 
     useEffect(() => {
         const loadSettings = async () => {
@@ -21,6 +22,16 @@ export const PopupSettingsView = () => {
             if (rewriteLang) setDefaultRewriteLang(rewriteLang)
             if (translateLang) setDefaultTranslateLang(translateLang)
             if (provider) setTranslationProvider(provider)
+
+            // Check if any API key exists
+            const providers = ["openrouter", "openai", "gemini", "groq"]
+            for (const p of providers) {
+                const key = await storage.get(`${p}_key`)
+                if (key) {
+                    setHasAnyKey(true)
+                    break
+                }
+            }
         }
         loadSettings()
     }, [])
@@ -80,18 +91,22 @@ export const PopupSettingsView = () => {
                 </label>
                 <div className="plasmo-grid plasmo-grid-cols-2 plasmo-gap-1 plasmo-p-0.5 plasmo-bg-slate-100 dark:plasmo-bg-slate-800 plasmo-rounded-md">
                     <button
-                        onClick={() => setTranslationProvider("ai")}
-                        className={`plasmo-py-1.5 plasmo-px-2 plasmo-rounded plasmo-text-[10px] plasmo-font-bold plasmo-transition-all ${translationProvider === "ai"
-                                ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-text-blue-600 dark:plasmo-text-blue-400 plasmo-shadow-sm"
-                                : "plasmo-text-slate-500 dark:plasmo-text-slate-400"
+                        onClick={() => hasAnyKey && setTranslationProvider("ai")}
+                        disabled={!hasAnyKey}
+                        title={!hasAnyKey ? "Add API key to enable AI translations" : "Use AI for high-quality translations"}
+                        className={`plasmo-py-1.5 plasmo-px-2 plasmo-rounded plasmo-text-[10px] plasmo-font-bold plasmo-transition-all ${!hasAnyKey
+                                ? "plasmo-opacity-40 plasmo-cursor-not-allowed plasmo-text-slate-400"
+                                : translationProvider === "ai"
+                                    ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-text-blue-600 dark:plasmo-text-blue-400 plasmo-shadow-sm"
+                                    : "plasmo-text-slate-500 dark:plasmo-text-slate-400 hover:plasmo-bg-white/50"
                             }`}>
-                        🤖 AI
+                        {hasAnyKey ? "🤖" : "🔒"} AI
                     </button>
                     <button
                         onClick={() => setTranslationProvider("free")}
                         className={`plasmo-py-1.5 plasmo-px-2 plasmo-rounded plasmo-text-[10px] plasmo-font-bold plasmo-transition-all ${translationProvider === "free"
-                                ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-text-green-600 dark:plasmo-text-green-400 plasmo-shadow-sm"
-                                : "plasmo-text-slate-500 dark:plasmo-text-slate-400"
+                            ? "plasmo-bg-white dark:plasmo-bg-slate-700 plasmo-text-green-600 dark:plasmo-text-green-400 plasmo-shadow-sm"
+                            : "plasmo-text-slate-500 dark:plasmo-text-slate-400 hover:plasmo-bg-white/50"
                             }`}>
                         🌐 Free
                     </button>
