@@ -78,8 +78,8 @@ export const PROVIDERS = [
 ] as const
 
 export const DEFAULTS = {
-    openrouter: "google/gemini-2.0-flash-exp:free",
-    openai: "gpt-4o-mini",
+    openrouter: "google/gemini-3.5-flash-lite",
+    openai: "gpt-5.6-luna",
     gemini: "gemini-3.5-flash",
-    groq: "llama3-8b-8192"
+    groq: "llama-3.1-8b-instant"
 } as const

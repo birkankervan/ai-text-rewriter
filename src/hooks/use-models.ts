@@ -65,7 +65,7 @@ export function useOpenRouterModels() {
                 // Filter for text-only models using API fields
                 const textModels = data.data.filter((m: any) => {
                     // Method 1: Check architecture.modality
-                    if (m.architecture?.modality === "text->text") {
+                    if (m.architecture?.modality?.includes("text") && m.architecture.modality.endsWith("->text")) {
                         return true
                     }
 
@@ -85,16 +85,12 @@ export function useOpenRouterModels() {
 
                 // Curated list of best translation models (prioritized)
                 const translationChampions = [
-                    'google/gemini-2.0-flash-exp:free',
-                    'google/gemini-2.5-flash:free',
-                    'google/gemini-flash-1.5',
-                    'openai/gpt-4o',
-                    'openai/gpt-4o-mini',
-                    'qwen/qwen3-235b',
-                    'qwen/qwen-2.5-72b-instruct',
-                    'meta-llama/llama-3.1-8b-instruct:free',
-                    'meta-llama/llama-3.2-3b-instruct:free',
-                    'mistralai/mistral-nemo'
+                    'google/gemini-3.5-flash-lite',
+                    'google/gemini-3.8-flash',
+                    'openai/gpt-5.6-luna',
+                    'anthropic/claude-haiku-5.5',
+                    'qwen/qwen3.8-flash',
+                    'google/gemma-4-31b-it:free'
                 ]
 
                 // Sort: champions first, then free models, then alphabetically

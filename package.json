@@ -1,14 +1,15 @@
 {
   "name": "ai-text-rewriter",
-  "displayName": "Smart Translate & Rewrite: AI Grammar Fixer & Paraphraser",
+  "displayName": "Smart Translate & Rewrite: AI Rewriter, Grammar Fix & Translator",
   "version": "1.0.15",
-  "description": "Instantly rewrite text, fix grammar, change tone, and translate on any website using your preferred AI (OpenAI, Gemini, Groq).",
+  "description": "Rewrite selected text in 6 tones or translate it into 21 languages, right on the page. Free translation; rewrite uses your AI key.",
   "author": "Birkan Kervan",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
     "package": "plasmo package",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental false",
+    "test": "node --import ./tests/register.mjs --experimental-test-module-mocks --test \"tests/*.test.ts\""
   },
   "dependencies": {
     "@plasmohq/messaging": "^0.7.2",
