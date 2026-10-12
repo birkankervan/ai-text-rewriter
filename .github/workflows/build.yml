@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Build the tag pushed by version-bump; the triggering SHA still has the old version
+          ref: ${{ inputs.version }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
