@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Store screenshot</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1280px; height: 800px; overflow: hidden; }
+  body {
+    background: linear-gradient(155deg, #191a20 0%, #0b0b0e 52%, #050506 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    color: #f5f5f7; -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+  .copy { position: absolute; top: 42px; left: 0; right: 0; text-align: center; }
+  h1 { margin: 0; font-size: 50px; line-height: 1.1; font-weight: 600; letter-spacing: -0.025em; }
+  p.sub { margin: 14px 0 0; font-size: 21px; line-height: 1.4; color: #a1a1a6; letter-spacing: -0.005em; }
+  .win {
+    position: absolute; left: 120px; top: 178px; width: 1040px; height: 610px;
+    border-radius: 14px; overflow: hidden; background: #fff;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 30px 80px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .bar { height: 44px; display: flex; align-items: center; gap: 14px; padding: 0 14px; background: #2a2a2e; border-bottom: 1px solid #1a1a1d; }
+  .dots { display: flex; gap: 8px; }
+  .dots i { width: 12px; height: 12px; border-radius: 50%; background: #4a4a4f; display: block; }
+  .nav { display: flex; gap: 14px; color: #77777d; font-size: 15px; }
+  .url { flex: 1; height: 28px; border-radius: 8px; background: #1c1c1f; color: #a1a1a6; font-size: 13px; display: flex; align-items: center; padding: 0 12px; gap: 8px; }
+  .url svg { opacity: .6 }
+  .ext { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; }
+  .ext.on { background: rgba(255,255,255,0.14); }
+  .ext img { width: 18px; height: 18px; display: block; }
+  .content { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; }
+  .content iframe { border: 0; width: 100%; height: 100%; display: block; background: #fff; }
+  .popup {
+    position: absolute; top: 40px; right: 10px; width: 400px; border: 0; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 24px 60px rgba(0,0,0,0.55);
+    background: #08080a; display: none;
+  }
+</style>
+</head>
+<body>
+  <div class="copy"><h1 id="h"></h1><p class="sub" id="s"></p></div>
+  <div class="win" id="win">
+    <div class="bar">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="nav"><span>&#8592;</span><span>&#8594;</span><span>&#8635;</span></div>
+      <div class="url"><svg width="11" height="12" viewBox="0 0 11 12"><rect x="1" y="5" width="9" height="7" rx="1.5" fill="#a1a1a6"/><path d="M3 5V3.5a2.5 2.5 0 0 1 5 0V5" stroke="#a1a1a6" stroke-width="1.4" fill="none"/></svg><span id="u"></span></div>
+      <div class="ext" id="ext"><img src="/icon/icon-128.png" alt=""></div>
+    </div>
+    <div class="content"><iframe id="page"></iframe></div>
+    <iframe class="popup" id="popup"></iframe>
+  </div>
+<script>
+  // Captions are verbatim from store_listings.md section 5.
+  const SCENES = {
+    1: { h: "Rewrite right where you type", s: "Pick a tone, then replace the selected text in one click.",
+         url: "mail.example.com/compose", page: "page-compose.html?theme=dark" },
+    2: { h: "Translate without leaving the page", s: "Select any text and read it in 21 languages. Free, no key needed.",
+         url: "ledger.example.org/health/park-walks", page: "page-article.html?theme=dark" },
+    3: { h: "Rewrite or translate anything", s: "Paste text into the popup when it isn't on a page.",
+         url: "ledger.example.org/health/park-walks", page: "page-article.html?theme=dark", popup: "/ext/popup.html?theme=dark&tone=Friendly" },
+    4: { h: "Your AI, your key", s: "Connect OpenRouter, OpenAI, Gemini or Groq and choose a model.",
+         url: "Smart Translate & Rewrite — Settings", page: "/ext/options.html?theme=light" },
+    5: { h: "Every result, kept for 15 days", s: "Search, copy or delete past rewrites and translations, all stored locally.",
+         url: "Smart Translate & Rewrite — History", page: "/ext/options.html?theme=dark&tab=history" }
+  }
+  const sc = SCENES[new URLSearchParams(location.search).get("scene") || 1]
+  document.getElementById("h").textContent = sc.h
+  document.getElementById("s").textContent = sc.s
+  document.getElementById("u").textContent = sc.url
+  document.getElementById("page").src = sc.page
+  if (sc.popup) {
+    const p = document.getElementById("popup")
+    p.src = sc.popup; p.style.display = "block"
+    document.getElementById("ext").classList.add("on")
+  }
+</script>
+</body>
+</html>

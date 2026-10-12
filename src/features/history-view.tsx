@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Check, Copy, Search, Trash2 } from "lucide-react"
 import { historyService, type HistoryItem } from "~services/history"
 import { SegmentedControl } from "~components/ui/segmented-control"
+import { PROVIDERS } from "~lib/constants"
 
 type Filter = "all" | "rewrite" | "translate"
 
@@ -24,6 +25,7 @@ function HistoryEntry({ item, onDelete }: { item: HistoryItem, onDelete: (id: nu
     const [expanded, setExpanded] = useState(false)
     const [copied, setCopied] = useState(false)
     const isLong = item.result.length > LONG_TEXT || item.original.length > LONG_TEXT
+    const provider = PROVIDERS.find(p => p.id === item.provider)?.name ?? item.provider
     const detail = item.type === "translate"
         ? item.translateOptions?.targetLang && `to ${item.translateOptions.targetLang}`
         : item.rewriteOptions?.tone
@@ -41,7 +43,7 @@ function HistoryEntry({ item, onDelete }: { item: HistoryItem, onDelete: (id: nu
                     <span className="apple-label plasmo-font-semibold">{item.type === "translate" ? "Translate" : "Rewrite"}</span>
                     {detail && <> · {detail}</>}
                     {" · "}{timeLabel(item.timestamp)}
-                    <span className="max-sm:plasmo-hidden" title={item.model}> · {item.provider}</span>
+                    <span className="max-sm:plasmo-hidden" title={item.model}> · {provider}</span>
                 </p>
                 <div className="plasmo-flex plasmo-shrink-0 plasmo-gap-1">
                     <button type="button" onClick={copy} aria-label={copied ? "Copied" : "Copy result"} title="Copy result" className="history-action">
