@@ -1,9 +1,11 @@
-import { Loader2 } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { Loader2, X } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Storage } from "@plasmohq/storage"
 import type { SupportedLanguage } from "~lib/constants"
 import TranslateView from "~features/translate-view"
 import RewriteView from "~features/rewrite-view"
+import { useAppearance } from "~hooks/use-appearance"
+import { usePointerLighting } from "~hooks/use-pointer-lighting"
 
 const storage = new Storage()
 
@@ -15,8 +17,6 @@ interface TranslationModalProps {
     placement: "top" | "bottom"
     initialMode: "rewrite" | "translate"
     onReplace?: (text: string) => void
-    prefetchedData?: string
-    prefetchedIsLoading?: boolean
 }
 
 // Separate hook for data fetching
@@ -88,10 +88,10 @@ export const TranslationModal = ({
     position,
     placement,
     initialMode,
-    onReplace,
-    prefetchedData,
-    prefetchedIsLoading
+    onReplace
 }: TranslationModalProps) => {
+    const appearance = useAppearance()
+    const pointerLighting = usePointerLighting(appearance.pointerLighting)
     const {
         isLoading,
         apiKey,
@@ -99,7 +99,11 @@ export const TranslationModal = ({
         defaultTranslateLang
     } = useTranslationSettings(isOpen)
 
-    if (!isOpen) return null
+    const dialogRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (isOpen) dialogRef.current?.focus()
+    }, [isOpen])
 
     // Memoized style calculations
     const modalStyle = useMemo(() => {
@@ -114,12 +118,14 @@ export const TranslationModal = ({
             left: position.x,
             top: position.y,
             transform: `translate(-50%, ${placement === "top" ? "-100%" : "0"})`,
-            marginTop: placement === "bottom" ? "12px" : "0",
             marginBottom: placement === "top" ? "12px" : "0",
             maxHeight: `${maxHeight}px`,
+            maxWidth: "calc(100vw - 16px)",
             fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif'
         } as const
     }, [position.x, position.y, placement])
+
+    if (!isOpen) return null
 
     return (
         <>
@@ -131,9 +137,23 @@ export const TranslationModal = ({
 
             {/* Modal Container */}
             <div
-                className="plasmo-fixed plasmo-z-50 plasmo-w-[380px] plasmo-bg-black/60 plasmo-backdrop-blur-2xl plasmo-backdrop-saturate-150 plasmo-rounded-3xl plasmo-shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] plasmo-border plasmo-border-white/10 plasmo-flex plasmo-flex-col plasmo-overflow-hidden plasmo-animate-in plasmo-fade-in plasmo-zoom-in-95 plasmo-duration-200 plasmo-ease-out plasmo-transition-all plasmo-duration-300 plasmo-ease-in-out"
+                className={`apple-theme apple-glass pointer-surface ${appearance.className} ${appearance.pointerLighting ? "pointer-light-active" : ""} plasmo-fixed plasmo-z-50 plasmo-w-[380px] focus:plasmo-outline-none plasmo-rounded-[26px] plasmo-flex plasmo-flex-col plasmo-overflow-hidden`}
                 style={modalStyle}
+                role="dialog"
+                aria-modal="true"
+                aria-label={initialMode === "translate" ? "Translate selected text" : "Rewrite selected text"}
+                tabIndex={-1}
+                ref={dialogRef}
+                onKeyDownCapture={(e) => { if (e.key === "Escape") onClose() }}
+                {...pointerLighting}
             >
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Close"
+                    className="plasmo-absolute plasmo-top-2 plasmo-right-2 plasmo-z-10 plasmo-flex plasmo-items-center plasmo-justify-center plasmo-w-6 plasmo-h-6 plasmo-rounded-full hover:plasmo-bg-black/10 focus-visible:plasmo-ring-2 focus-visible:plasmo-ring-blue-500">
+                    <X className="apple-label plasmo-w-3 plasmo-h-3" />
+                </button>
                 <div className="plasmo-overflow-y-auto plasmo-flex-1 plasmo-w-full custom-scrollbar">
                     {!isLoading ? (
                         initialMode === "translate" ? (
@@ -141,8 +161,6 @@ export const TranslationModal = ({
                                 initialText={initialText}
                                 apiKey={apiKey}
                                 defaultTargetLang={defaultTranslateLang}
-                                prefetchedData={prefetchedData}
-                                prefetchedIsLoading={prefetchedIsLoading}
                             />
                         ) : (
                             <RewriteView
@@ -156,7 +174,7 @@ export const TranslationModal = ({
                         )
                     ) : (
                         <div className="plasmo-p-8 plasmo-flex plasmo-items-center plasmo-justify-center">
-                            <Loader2 className="plasmo-w-6 plasmo-h-6 plasmo-text-white/30 plasmo-animate-spin" />
+                            <Loader2 className="plasmo-w-6 plasmo-h-6 apple-muted plasmo-animate-spin" />
                         </div>
                     )}
                 </div>

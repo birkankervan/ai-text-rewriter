@@ -2,6 +2,7 @@ import { Storage } from "@plasmohq/storage"
 import { sendToBackground } from "@plasmohq/messaging"
 import { llmService } from "./llm"
 import type { TranslationProvider } from "~lib/llm-types"
+import { LANGUAGE_TO_CODE } from "~lib/constants"
 
 const storage = new Storage()
 
@@ -16,6 +17,7 @@ interface TranslateOptions {
     mode: "rewrite" | "translate"
     targetLang?: string
     tone?: string
+    fixGrammar?: boolean
     signal?: AbortSignal
 }
 
@@ -33,11 +35,11 @@ export class TranslationGateway {
         text: string,
         options: TranslateOptions
     ): AsyncGenerator<string> {
-        const { mode, targetLang, tone, signal } = options
+        const { mode, targetLang, tone, fixGrammar, signal } = options
 
         // RULE 1: Rewrite mode ALWAYS uses AI
         if (mode === "rewrite") {
-            yield* this.useAIProvider(text, { mode, targetLang, tone, signal })
+            yield* this.useAIProvider(text, { mode, targetLang, tone, fixGrammar, signal })
             return
         }
 
@@ -57,7 +59,7 @@ export class TranslationGateway {
 
         if (apiKey) {
             // API key exists - use AI provider
-            yield* this.useAIProvider(text, { mode, targetLang, tone, signal })
+            yield* this.useAIProvider(text, { mode, targetLang, tone, fixGrammar, signal })
         } else {
             // API key missing - AUTOMATIC FALLBACK to free translation
             console.warn("AI provider selected but no API key found. Falling back to free translation.")
@@ -75,12 +77,13 @@ export class TranslationGateway {
         text: string,
         options: TranslateOptions
     ): AsyncGenerator<string> {
-        const securePrompt = `<input>${text}</input>`
+        const securePrompt = `SOURCE_TEXT_JSON\n${JSON.stringify(text)}`
 
         yield* llmService.generateText(securePrompt, {
             mode: options.mode,
             targetLang: options.targetLang,
             tone: options.tone,
+            fixGrammar: options.fixGrammar,
             signal: options.signal
         })
     }
@@ -90,33 +93,7 @@ export class TranslationGateway {
      */
     private async useFreeTranslation(text: string, targetLang: string): Promise<string> {
         try {
-            // Map language names to Google Translate language codes
-            const langCodeMap: Record<string, string> = {
-                "Keep Original": "auto",
-                "English": "en",
-                "Spanish": "es",
-                "French": "fr",
-                "German": "de",
-                "Italian": "it",
-                "Portuguese": "pt",
-                "Dutch": "nl",
-                "Russian": "ru",
-                "Chinese (Simplified)": "zh-CN",
-                "Japanese": "ja",
-                "Korean": "ko",
-                "Arabic": "ar",
-                "Hindi": "hi",
-                "Turkish": "tr",
-                "Greek": "el",
-                "Hebrew": "he",
-                "Swedish": "sv",
-                "Polish": "pl",
-                "Vietnamese": "vi",
-                "Thai": "th",
-                "Georgian": "ka"
-            }
-
-            const targetCode = langCodeMap[targetLang] || "en"
+            const targetCode = LANGUAGE_TO_CODE[targetLang] || "en"
 
             const response = await sendToBackground({
                 name: "free-translate" as any,

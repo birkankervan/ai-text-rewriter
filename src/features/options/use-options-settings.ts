@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react"
 import { Storage } from "@plasmohq/storage"
 import { useOpenAIModels, useOpenRouterModels, useGeminiModels, useGroqModels } from "~hooks/use-models"
 import { DEFAULTS, PROVIDERS } from "~lib/constants"
-import type { TranslationProvider } from "~lib/llm-types"
 
 const storage = new Storage()
 
@@ -74,28 +73,13 @@ export function useOptionsSettings() {
         setSavedStatus(prev => ({ ...prev, [providerId]: false }))
     }
 
-    const saveKey = async (providerId: string) => {
-        const value = keys[providerId]
+    const saveKey = async (providerId: string, valueOverride?: string) => {
+        const value = (valueOverride ?? keys[providerId] ?? "").trim()
+        setKeys(prev => ({ ...prev, [providerId]: value }))
         await storage.set(`${providerId}_key`, value)
 
         const newKeyExists = { ...keyExists, [providerId]: !!value }
         setKeyExists(newKeyExists)
-
-        if (value) {
-            const previousKeyCount = Object.values(keyExists).filter(Boolean).length
-            const isFirstKey = previousKeyCount === 0
-
-            setActiveProvider(providerId)
-            await storage.set("active_provider", providerId)
-
-            const defaultModel = DEFAULTS[providerId as keyof typeof DEFAULTS]
-            setModel(defaultModel)
-            await storage.set(`${providerId}_model`, defaultModel)
-
-            if (isFirstKey) {
-                await storage.set("preferred_translation_provider", "ai")
-            }
-        }
 
         if (!value && activeProvider === providerId) {
             const nextProvider = PROVIDERS.find(p => p.id !== providerId && newKeyExists[p.id])

@@ -1,5 +1,5 @@
 import cssText from "data-text:~style.css"
-import { useCallback, useEffect, useState, useRef } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Storage } from "@plasmohq/storage"
 import type { PlasmoCSConfig } from "plasmo"
@@ -7,9 +7,6 @@ import type { PlasmoCSConfig } from "plasmo"
 import { TranslationModal } from "~features/translation-modal"
 import { FloatingButton } from "~features/content/floating-button"
 import { useSelectionManager } from "~features/content/use-selection-manager"
-
-import { useStream } from "~hooks/use-stream"
-import type { SupportedLanguage } from "~lib/constants"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
@@ -46,14 +43,7 @@ const PlasmoOverlayContent = () => {
     clampedPosition,
     position,
     modalPlacement
-  } = useSelectionManager({
-    showModal,
-    onSelectionChange: () => setHasPrefetched(false)
-  })
-
-  // Prefetching logic integration
-  const { generate, data: prefetchedData, isLoading: isPrefetching } = useStream()
-  const [hasPrefetched, setHasPrefetched] = useState(false)
+  } = useSelectionManager({ showModal })
 
   // Check API key existence
   useEffect(() => {
@@ -70,17 +60,6 @@ const PlasmoOverlayContent = () => {
     return () => window.removeEventListener('focus', handleFocus)
   }, [])
 
-  const handleMouseEnterTranslate = useCallback(async () => {
-    if (mode === "translate" && selectedText && !hasPrefetched && !showModal) {
-      const storage = new Storage()
-      const defaultLang = await storage.get("default_lang_translate") as SupportedLanguage || "English"
-
-      setHasPrefetched(true)
-      generate(selectedText, { mode: "translate", targetLang: defaultLang }, true)
-    }
-  }, [mode, selectedText, hasPrefetched, showModal, generate])
-
-
   const handleReplace = useCallback((newText: string) => {
     if (targetElement) {
       if ((targetElement.tagName === "INPUT" || targetElement.tagName === "TEXTAREA") && 'value' in targetElement) {
@@ -90,7 +69,10 @@ const PlasmoOverlayContent = () => {
         const originalText = input.value
 
         const updatedText = originalText.substring(0, start!) + newText + originalText.substring(end!)
-        input.value = updatedText
+        const prototype = input.tagName === "TEXTAREA"
+          ? HTMLTextAreaElement.prototype
+          : HTMLInputElement.prototype
+        Object.getOwnPropertyDescriptor(prototype, "value")?.set?.call(input, updatedText)
 
         input.dispatchEvent(new Event('input', { bubbles: true }))
         input.dispatchEvent(new Event('change', { bubbles: true }))
@@ -114,7 +96,6 @@ const PlasmoOverlayContent = () => {
 
       setShowModal(false)
       setIsVisible(false) // Close the floating button too
-      setHasPrefetched(false)
     }
   }, [targetElement, selectionRange, setIsVisible])
 
@@ -123,7 +104,6 @@ const PlasmoOverlayContent = () => {
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
     setIsVisible(false)
-    setHasPrefetched(false)
   }, [setIsVisible])
 
   if (!isVisible) return null
@@ -138,8 +118,6 @@ const PlasmoOverlayContent = () => {
         placement={modalPlacement}
         initialMode={mode}
         onReplace={targetElement ? handleReplace : undefined}
-        prefetchedData={mode === "translate" ? prefetchedData : undefined}
-        prefetchedIsLoading={mode === "translate" ? isPrefetching : undefined}
       />
     )
   }
@@ -150,7 +128,6 @@ const PlasmoOverlayContent = () => {
       position={position}
       onRewrite={handleOpenModal}
       onTranslate={handleOpenModal}
-      onMouseEnterTranslate={handleMouseEnterTranslate}
     />
   )
 }

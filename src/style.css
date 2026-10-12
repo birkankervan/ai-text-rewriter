@@ -1,10 +1,758 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
-
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root,
+:host {
+  --apple-bg: #f2f2f7;
+  --apple-surface: rgba(255, 255, 255, 0.82);
+  --apple-surface-solid: #ffffff;
+  --apple-surface-muted: #e9e9ee;
+  --apple-glass: rgba(242, 242, 247, 0.72);
+  --apple-label: #1c1c1e;
+  --apple-label-secondary: #636366;
+  --apple-separator: rgba(60, 60, 67, 0.16);
+  --apple-accent: #007aff;
+  --apple-accent-hover: #006ee6;
+  --apple-danger: #ff3b30;
+  --apple-success: #248a3d;
+  --apple-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  :host {
+    --apple-bg: #161617;
+    --apple-surface: rgba(44, 44, 46, 0.86);
+    --apple-surface-solid: #242426;
+    --apple-surface-muted: #323234;
+    --apple-glass: rgba(44, 44, 46, 0.72);
+    --apple-label: #f5f5f7;
+    --apple-label-secondary: #aeaeb2;
+    --apple-separator: rgba(235, 235, 245, 0.16);
+    --apple-accent: #0a84ff;
+    --apple-accent-hover: #409cff;
+    --apple-danger: #ff453a;
+    --apple-success: #30d158;
+    --apple-shadow: 0 18px 44px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.appearance-light {
+  --apple-bg: #f2f2f7;
+  --apple-surface: rgba(255, 255, 255, 0.82);
+  --apple-surface-solid: #ffffff;
+  --apple-surface-muted: #e9e9ee;
+  --apple-glass: rgba(242, 242, 247, 0.72);
+  --apple-label: #1c1c1e;
+  --apple-label-secondary: #636366;
+  --apple-separator: rgba(60, 60, 67, 0.16);
+  --apple-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --apple-danger: #d70015;
+  --apple-success: #248a3d;
+  color-scheme: light;
+}
+
+.appearance-dark {
+  --apple-bg: #161617;
+  --apple-surface: rgba(44, 44, 46, 0.86);
+  --apple-surface-solid: #242426;
+  --apple-surface-muted: #323234;
+  --apple-glass: rgba(44, 44, 46, 0.72);
+  --apple-label: #f5f5f7;
+  --apple-label-secondary: #aeaeb2;
+  --apple-separator: rgba(235, 235, 245, 0.16);
+  --apple-shadow: 0 18px 44px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --apple-danger: #ff453a;
+  --apple-success: #30d158;
+  color-scheme: dark;
+}
+
+.appearance-oled {
+  --apple-bg: #000000;
+  --apple-surface: #000000;
+  --apple-surface-solid: #000000;
+  --apple-surface-muted: #0b0b0c;
+  --apple-glass: rgba(0, 0, 0, 0.9);
+}
+
+.appearance-oled.apple-app-background,
+.appearance-oled.tvos-shell {
+  background-color: #000;
+}
+
+body {
+  margin: 0;
+  background: var(--apple-bg);
+  color: var(--apple-label);
+  font-family: var(--apple-font);
+}
+
+.apple-theme {
+  color: var(--apple-label);
+  font-family: var(--apple-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.apple-app-background {
+  background: var(--apple-bg);
+}
+
+.apple-glass {
+  background: var(--apple-glass);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), var(--apple-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  backdrop-filter: blur(24px) saturate(145%);
+}
+
+.apple-toolbar {
+  border-radius: 999px;
+  padding: 5px;
+}
+
+.apple-content {
+  background: var(--apple-surface-solid);
+  border: 1px solid var(--apple-separator);
+  color: var(--apple-label);
+}
+
+.apple-card {
+  background: var(--apple-surface);
+  border: 1px solid var(--apple-separator);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: var(--apple-label);
+}
+
+.apple-field {
+  background: var(--apple-surface-muted) !important;
+  border: 1px solid transparent !important;
+  color: var(--apple-label) !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 0 0 1px rgba(60, 60, 67, 0.04);
+}
+
+.apple-field::placeholder {
+  color: var(--apple-label-secondary) !important;
+}
+
+.apple-field:focus {
+  border-color: var(--apple-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--apple-accent) 20%, transparent) !important;
+  outline: none;
+}
+
+.apple-segmented {
+  background: rgba(118, 118, 128, 0.12);
+  border: 1px solid rgba(118, 118, 128, 0.08);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.apple-control-group {
+  background: rgba(118, 118, 128, 0.12);
+  border: 1px solid rgba(118, 118, 128, 0.08);
+}
+
+.apple-segment {
+  min-height: 34px;
+  border-radius: 999px;
+  color: var(--apple-label-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.apple-segment:hover {
+  color: var(--apple-label);
+}
+
+.apple-segment-active {
+  background: var(--apple-surface-solid);
+  color: var(--apple-label);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.apple-primary,
+.apple-secondary,
+.apple-icon-button {
+  min-height: 40px;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  transition: background-color 160ms ease, opacity 160ms ease, box-shadow 160ms ease !important;
+  transform: none !important;
+}
+
+.apple-primary {
+  background: var(--apple-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--apple-accent) 24%, transparent) !important;
+}
+
+.apple-primary:hover { background: var(--apple-accent-hover) !important; }
+
+.apple-primary:disabled {
+  background: rgba(118, 118, 128, 0.16) !important;
+  color: var(--apple-label-secondary) !important;
+  box-shadow: none !important;
+}
+
+.apple-secondary {
+  background: rgba(118, 118, 128, 0.12) !important;
+  color: var(--apple-label) !important;
+  box-shadow: none !important;
+}
+
+.apple-icon-button {
+  min-width: 40px;
+  color: var(--apple-label-secondary) !important;
+}
+
+.apple-primary:focus-visible,
+.apple-secondary:focus-visible,
+.apple-icon-button:focus-visible,
+.apple-segment:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--apple-accent) 38%, transparent);
+  outline-offset: 2px;
+}
+
+.apple-result {
+  background: var(--apple-surface-muted) !important;
+  border: 1px solid transparent !important;
+  color: var(--apple-label) !important;
+  box-shadow: none !important;
+}
+
+.apple-muted { color: var(--apple-label-secondary) !important; }
+.apple-label { color: var(--apple-label) !important; }
+
+.pointer-surface {
+  --edge-reflection: 255, 255, 255;
+  --spot-x: 50%;
+  --spot-y: 18%;
+}
+
+.pointer-surface.appearance-light { --edge-reflection: 0, 0, 0; }
+
+.pointer-surface .apple-card,
+.pointer-surface .apple-glass,
+.pointer-surface .apple-result,
+.pointer-surface .apple-segmented {
+  --edge-glow: 0;
+  --edge-x: 50%;
+  --edge-y: 50%;
+  position: relative;
+}
+
+.pointer-surface .apple-card::after,
+.pointer-surface .apple-glass::after,
+.pointer-surface .apple-result::after,
+.pointer-surface .apple-segmented::after,
+.pointer-surface button::after,
+.pointer-surface .pointer-target::after {
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.64)), transparent 74%);
+  content: "";
+  opacity: var(--edge-glow);
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.pointer-surface button:not([class*="plasmo-absolute"]) {
+  --edge-glow: 0;
+  --edge-x: 50%;
+  --edge-y: 50%;
+  position: relative;
+}
+
+.pointer-surface textarea,
+.pointer-surface select,
+.pointer-surface input {
+  --edge-glow: 0;
+  --edge-x: 50%;
+  --edge-y: 50%;
+  --edge-fill: var(--apple-surface-muted);
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(var(--edge-fill), var(--edge-fill)) padding-box,
+    radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.64)), transparent 74%) border-box !important;
+}
+
+.tvos-shell {
+  --apple-bg: #08080a;
+  --apple-surface: rgba(36, 36, 40, 0.78);
+  --apple-surface-solid: #1c1c1f;
+  --apple-surface-muted: rgba(255, 255, 255, 0.08);
+  --apple-glass: rgba(38, 38, 42, 0.7);
+  --apple-label: #f5f5f7;
+  --apple-label-secondary: #a1a1a6;
+  --apple-separator: rgba(255, 255, 255, 0.12);
+  --apple-accent: #ffffff;
+  --apple-accent-hover: #ffffff;
+  --spot-x: 50%;
+  --spot-y: 18%;
+  --edge-reflection: 255, 255, 255;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(155deg, #191a20 0%, #0b0b0e 52%, #050506 100%);
+  color: var(--apple-label);
+}
+
+.tvos-shell::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(42px circle at var(--spot-x) var(--spot-y), rgba(255, 255, 255, 0.12), transparent 76%);
+  content: "";
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.tvos-shell.pointer-light-active::before { opacity: 1; }
+
+.tvos-header {
+  background: rgba(10, 10, 12, 0.46);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  backdrop-filter: blur(22px) saturate(130%);
+}
+
+.tvos-shell .apple-segmented {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tvos-shell .apple-segment {
+  min-height: 40px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.tvos-shell .apple-segment:hover,
+.tvos-shell .apple-segment:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tvos-shell .apple-segment-active {
+  background: #fff;
+  color: #111114;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36), 0 0 22px rgba(255, 255, 255, 0.1);
+}
+
+.segmented-control {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(var(--segment-count), minmax(0, 1fr));
+}
+
+.segmented-control::before {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  z-index: 0;
+  width: calc((100% - 6px) / var(--segment-count));
+  border-radius: 999px;
+  background: var(--apple-surface-solid);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  content: "";
+  transform: translateX(calc(var(--segment-index) * 100%));
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease;
+}
+
+.segmented-control .apple-segment {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  box-shadow: none;
+  min-width: 0;
+  padding-inline: 12px;
+}
+
+.segmented-control .apple-segment-active,
+.segmented-control .apple-segment-active:hover,
+.segmented-control .apple-segment-active:focus-visible {
+  background: transparent;
+  box-shadow: none !important;
+  color: var(--apple-label);
+}
+
+.segmented-control .apple-segment:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.tvos-shell .apple-field,
+.tvos-shell .apple-result {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.tvos-shell .apple-field:hover {
+  background: rgba(255, 255, 255, 0.11) !important;
+}
+
+.tvos-shell .apple-primary,
+.tvos-shell .provider-setup-button {
+  min-height: 50px;
+  width: 100%;
+  border-radius: 14px !important;
+  background: #fff !important;
+  color: #111114 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34), 0 0 24px rgba(255, 255, 255, 0.1) !important;
+  font-size: 13px;
+  font-weight: 700 !important;
+}
+
+.tvos-shell .apple-primary:hover,
+.tvos-shell .provider-setup-button:hover,
+.tvos-shell .apple-primary:focus-visible,
+.tvos-shell .provider-setup-button:focus-visible {
+  background: #fff !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.42), 0 0 34px rgba(255, 255, 255, 0.18) !important;
+}
+
+.tvos-shell .apple-primary:disabled {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.34) !important;
+  box-shadow: none !important;
+}
+
+.tvos-focus-row {
+  --edge-glow: 0;
+  --edge-x: 50%;
+  --edge-y: 50%;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.tvos-focus-row:hover,
+.tvos-focus-row:focus-within {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.tvos-shell textarea,
+.tvos-shell select,
+.tvos-shell input {
+  --edge-glow: 0;
+  --edge-x: 50%;
+  --edge-y: 50%;
+  --edge-fill: rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent !important;
+  outline-offset: 2px;
+  background:
+    linear-gradient(var(--edge-fill), var(--edge-fill)) padding-box,
+    radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.72)), transparent 74%) border-box !important;
+  box-shadow: none !important;
+}
+
+.tvos-shell .apple-primary,
+.tvos-shell .provider-setup-button,
+.tvos-shell .apple-segment-active {
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(255, 255, 255, 0.1) !important;
+}
+
+.appearance-oled.tvos-shell {
+  background: #000;
+}
+
+.tvos-shell.appearance-light {
+  --apple-surface: rgba(255, 255, 255, 0.76);
+  --apple-surface-solid: #ffffff;
+  --apple-surface-muted: rgba(255, 255, 255, 0.58);
+  --apple-label: #17171a;
+  --apple-label-secondary: #696970;
+  --apple-separator: rgba(38, 38, 44, 0.14);
+  --edge-reflection: 0, 0, 0;
+  background: linear-gradient(155deg, #f8f8fb 0%, #e8e9ef 52%, #dfe1e8 100%);
+}
+
+.tvos-shell.appearance-light::before {
+  background: radial-gradient(42px circle at var(--spot-x) var(--spot-y), rgba(0, 0, 0, 0.13), transparent 76%);
+}
+
+.tvos-shell.appearance-light .tvos-header {
+  background: rgba(246, 246, 249, 0.58);
+}
+
+.tvos-shell.appearance-light .apple-segmented {
+  background: rgba(118, 118, 128, 0.13);
+  border-color: rgba(60, 60, 67, 0.1);
+}
+
+.tvos-shell.appearance-light .apple-segment { color: var(--apple-label-secondary); }
+.tvos-shell.appearance-light .apple-segment:hover { color: #111114; background: rgba(255, 255, 255, 0.48); }
+.tvos-shell.appearance-light .apple-segment-active { color: #111114; background: #fff; }
+.tvos-shell.appearance-light .apple-field,
+.tvos-shell.appearance-light .apple-result {
+  --edge-fill: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.58) !important;
+  border-color: rgba(60, 60, 67, 0.12) !important;
+  color: #17171a !important;
+}
+
+.tvos-shell.appearance-light .tvos-focus-row {
+  border-color: rgba(60, 60, 67, 0.14) !important;
+  background-color: rgba(255, 255, 255, 0.48) !important;
+}
+
+.tvos-shell.appearance-light textarea,
+.tvos-shell.appearance-light select,
+.tvos-shell.appearance-light input {
+  --edge-fill: rgba(255, 255, 255, 0.58);
+  background:
+    linear-gradient(var(--edge-fill), var(--edge-fill)) padding-box,
+    radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.58)), transparent 74%) border-box !important;
+}
+
+.tvos-shell.appearance-light .segmented-control::before {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.tvos-shell .segmented-control::before {
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36), 0 0 22px rgba(255, 255, 255, 0.1);
+}
+
+.tvos-shell .segmented-control .apple-segment-active,
+.tvos-shell .segmented-control .apple-segment-active:hover,
+.tvos-shell .segmented-control .apple-segment-active:focus-visible {
+  color: #111114;
+  background: transparent;
+}
+
+.tvos-shell.appearance-light .apple-primary,
+.tvos-shell.appearance-light .provider-setup-button,
+.tvos-shell.appearance-light .apple-segment-active {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.tvos-shell textarea.apple-field,
+.tvos-shell select.apple-field,
+.tvos-shell input.apple-field {
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(var(--edge-fill), var(--edge-fill)) padding-box,
+    radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.72)), transparent 74%) border-box !important;
+}
+
+.pointer-surface.appearance-light textarea.apple-field,
+.pointer-surface.appearance-light select.apple-field,
+.pointer-surface.appearance-light input.apple-field {
+  --edge-fill: var(--apple-surface-muted);
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(var(--edge-fill), var(--edge-fill)) padding-box,
+    radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.58)), transparent 74%) border-box !important;
+}
+
+.tvos-shell.appearance-light textarea.apple-field,
+.tvos-shell.appearance-light select.apple-field,
+.tvos-shell.appearance-light input.apple-field {
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(var(--edge-fill), var(--edge-fill)) padding-box,
+    radial-gradient(24px circle at var(--edge-x) var(--edge-y), rgba(var(--edge-reflection), calc(var(--edge-glow) * 0.58)), transparent 74%) border-box !important;
+}
+
+.tab-panel {
+  animation: tab-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tab-panel-left { --tab-from: -10px; }
+.tab-panel-right { --tab-from: 10px; }
+
+/* Options page: shares the popup's tvOS shell, as a scrolling page */
+.options-page {
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.options-page.appearance-light { --apple-accent: #17171a; }
+
+.options-page .apple-primary {
+  width: auto;
+  min-height: 44px;
+  padding-inline: 20px;
+  border-radius: 12px !important;
+}
+
+.options-page .apple-primary:disabled {
+  background: rgba(118, 118, 128, 0.2) !important;
+  color: var(--apple-label-secondary) !important;
+  box-shadow: none !important;
+}
+
+/* Light pages need a dark primary; white-on-white disappears */
+.options-page.appearance-light .apple-primary:not(:disabled) {
+  background: #17171a !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+}
+
+.options-page.appearance-light input.apple-field,
+.options-page.appearance-light select.apple-field {
+  --edge-fill: rgba(118, 118, 128, 0.12);
+}
+
+.options-page .apple-secondary {
+  min-height: 44px;
+  border-radius: 12px !important;
+}
+
+.options-page .apple-segment { min-height: 34px; }
+
+.settings-group { overflow: hidden; }
+
+.settings-divider,
+.settings-row + .settings-row {
+  border-top: 1px solid var(--apple-separator);
+}
+
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.provider-option {
+  border-bottom: 1px solid var(--apple-separator);
+  transition: background-color 160ms ease;
+}
+
+.provider-option:nth-child(odd) { border-right: 1px solid var(--apple-separator); }
+.provider-option:nth-last-child(-n + 2) { border-bottom: 0; }
+.provider-option:hover { background: color-mix(in srgb, var(--apple-label) 5%, transparent); }
+.provider-option[aria-checked="true"] { background: color-mix(in srgb, var(--apple-label) 8%, transparent); }
+
+.provider-option:focus-visible,
+.settings-switch:focus-visible {
+  outline: 2px solid var(--apple-label);
+  outline-offset: -2px;
+}
+
+.provider-radio {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid var(--apple-label-secondary);
+  border-radius: 999px;
+}
+
+.provider-option[aria-checked="true"] .provider-radio {
+  border-color: var(--apple-label);
+  box-shadow: inset 0 0 0 4px var(--apple-surface-solid), inset 0 0 0 9px var(--apple-label);
+}
+
+.provider-status-on { color: var(--apple-success); }
+
+.provider-remove {
+  min-height: 44px;
+  border-radius: 12px;
+  color: var(--apple-danger);
+}
+
+.provider-remove:hover { background: color-mix(in srgb, var(--apple-danger) 12%, transparent); }
+
+.history-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--apple-label-secondary);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.history-action:hover { background: color-mix(in srgb, var(--apple-label) 8%, transparent); color: var(--apple-label); }
+.history-action-danger:hover { background: color-mix(in srgb, var(--apple-danger) 12%, transparent); color: var(--apple-danger); }
+
+.history-action:focus-visible {
+  outline: 2px solid var(--apple-label);
+  outline-offset: 1px;
+}
+
+.settings-switch {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgba(120, 120, 128, 0.32);
+  transition: background-color 160ms ease;
+}
+
+.settings-switch[aria-checked="true"] { background: var(--apple-success); }
+
+.settings-switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.settings-switch[aria-checked="true"] .settings-switch-knob { transform: translateX(18px); }
+
+@media (max-width: 640px) {
+  .provider-grid { grid-template-columns: 1fr; }
+  .provider-option:nth-child(odd) { border-right: 0; }
+  .provider-option:nth-last-child(2) { border-bottom: 1px solid var(--apple-separator); }
+}
+
+@keyframes tab-enter {
+  from { opacity: 0; transform: translateX(var(--tab-from)); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .apple-glass { background: var(--apple-surface-solid); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .apple-glass {
+    background: var(--apple-surface-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root, :host { --apple-separator: currentColor; }
+  .apple-glass, .apple-card, .apple-content { border-width: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .tvos-shell { --spot-x: 50%; --spot-y: 18%; }
+  .segmented-control::before { transition: none; }
+}
 
 #plasmo-shadow-container {
   all: initial;
@@ -12,7 +760,7 @@
 }
 
 :host {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--apple-font);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -22,9 +770,9 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(118, 118, 128, 0.24);
   border-radius: 20px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(118, 118, 128, 0.4);
 }

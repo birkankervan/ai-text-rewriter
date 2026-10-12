@@ -1,90 +1,76 @@
 import { useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { HistoryTable } from "~features/history-table"
-import { Sidebar } from "~features/options/sidebar"
+import iconSrc from "url:~assets/icon.png"
+import { HistoryView } from "~features/history-view"
 import { DefaultsSection } from "~features/options/defaults-section"
-import { ActiveProviderSection } from "~features/options/active-provider-section"
-import { KeyVaultSection } from "~features/options/key-vault-section"
+import { ProviderSetup } from "~features/options/provider-setup"
 import { useOptionsSettings } from "~features/options/use-options-settings"
+import { useAppearance } from "~hooks/use-appearance"
+import { usePointerLighting } from "~hooks/use-pointer-lighting"
+import { SegmentedControl } from "~components/ui/segmented-control"
 import "./style.css"
 
 const queryClient = new QueryClient()
 
+const LINKS = [
+    { href: "https://birkankervan.github.io/ai-text-rewriter/", label: "Website" },
+    { href: "https://birkankervan.github.io/ai-text-rewriter/setup.html", label: "Setup guide" },
+    { href: "https://birkankervan.github.io/ai-text-rewriter/PRIVACY_POLICY", label: "Privacy" },
+    { href: "mailto:e.birkankervan@gmail.com", label: "Support" }
+]
+
 function OptionsContent() {
-    const [activeTab, setActiveTab] = useState<"settings" | "history">("settings")
-
-    // Custom Hook managing all settings state
-    const {
-        activeProvider,
-        keys,
-        keyExists,
-        model,
-        savedStatus,
-        handleActiveProviderChange,
-        handleKeyChange,
-        saveKey,
-        handleModelChange,
-        currentModels,
-        loadingModels,
-        isModelMissing
-    } = useOptionsSettings()
-
-    const hasAnyKey = Object.values(keyExists).some(Boolean)
-    const activeKey = keys[activeProvider] || ""
+    const params = new URLSearchParams(window.location.search)
+    const [activeTab, setActiveTab] = useState<"settings" | "history">(params.get("tab") === "history" ? "history" : "settings")
+    const settings = useOptionsSettings()
+    const hasAnyKey = Object.values(settings.keyExists).some(Boolean)
+    const appearance = useAppearance()
+    const pointerLighting = usePointerLighting(appearance.pointerLighting)
 
     return (
-        <div className="plasmo-min-h-screen plasmo-bg-gray-50 dark:plasmo-bg-slate-950 plasmo-text-slate-900 dark:plasmo-text-slate-100 plasmo-flex" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif' }}>
-            {/* Sidebar Navigation */}
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-            {/* Main Content Area */}
-            <div className="plasmo-flex-1 plasmo-ml-72 plasmo-p-8">
-                <div className="plasmo-max-w-4xl plasmo-mx-auto">
-                    <header className="plasmo-mb-8">
-                        <h1 className="plasmo-text-2xl plasmo-font-bold plasmo-text-slate-900 dark:plasmo-text-white">
-                            {activeTab === "settings" ? "Extension Settings" : "Activity History"}
-                        </h1>
-                        <p className="plasmo-text-slate-500 dark:plasmo-text-slate-400 plasmo-mt-1">
-                            {activeTab === "settings"
-                                ? "Configure your AI providers and keys."
-                                : "View your past translations and rewrites."}
-                        </p>
-                    </header>
-
-                    {activeTab === "settings" ? (
-                        <div className="plasmo-flex plasmo-flex-col plasmo-gap-8">
-                            {/* Section A: Defaults & Preferences */}
-                            <DefaultsSection hasAnyKey={hasAnyKey} />
-
-                            {/* Section B: General Settings (Active Provider) */}
-                            <ActiveProviderSection
-                                activeProvider={activeProvider}
-                                keyExists={keyExists}
-                                model={model}
-                                handleActiveProviderChange={handleActiveProviderChange}
-                                handleModelChange={handleModelChange}
-                                activeKey={activeKey}
-                                currentModels={currentModels}
-                                loadingModels={loadingModels}
-                                isModelMissing={isModelMissing}
-                            />
-
-                            {/* Section C: API Key Vault */}
-                            <KeyVaultSection
-                                keys={keys}
-                                keyExists={keyExists}
-                                savedStatus={savedStatus}
-                                handleKeyChange={handleKeyChange}
-                                saveKey={saveKey}
-                            />
-                        </div>
-                    ) : (
-                        <div className="plasmo-h-[600px]">
-                            <HistoryTable />
-                        </div>
-                    )}
+        <div className={`apple-theme tvos-shell options-page pointer-surface ${appearance.className} ${appearance.pointerLighting ? "pointer-light-active" : ""}`} {...pointerLighting}>
+            <header className="tvos-header plasmo-sticky plasmo-top-0 plasmo-z-20 plasmo-border-b" style={{ borderColor: "var(--apple-separator)" }}>
+                <div className="plasmo-mx-auto plasmo-flex plasmo-h-16 plasmo-max-w-3xl plasmo-items-center plasmo-justify-between plasmo-gap-4 plasmo-px-6">
+                    <div className="plasmo-flex plasmo-min-w-0 plasmo-items-center plasmo-gap-2.5">
+                        <img src={iconSrc} alt="" aria-hidden="true" className="plasmo-h-7 plasmo-w-7 plasmo-rounded-lg" />
+                        <span className="apple-label plasmo-truncate plasmo-text-base plasmo-font-semibold plasmo-tracking-tight max-sm:plasmo-hidden">Smart Translate & Rewrite</span>
+                    </div>
+                    <SegmentedControl<"settings" | "history">
+                        ariaLabel="Section"
+                        value={activeTab}
+                        onChange={setActiveTab}
+                        className="plasmo-w-56"
+                        options={[
+                            { value: "settings", label: "Settings" },
+                            { value: "history", label: "History" }
+                        ]}
+                    />
                 </div>
-            </div>
+            </header>
+
+            <main className="plasmo-mx-auto plasmo-max-w-3xl plasmo-px-6 plasmo-pb-16 plasmo-pt-10">
+                {activeTab === "settings" ? (
+                    <div className="plasmo-flex plasmo-flex-col plasmo-gap-12">
+                        <ProviderSetup {...settings} />
+                        <DefaultsSection hasAnyKey={hasAnyKey} />
+                    </div>
+                ) : (
+                    <HistoryView initialFilter={params.get("type") === "rewrite" ? "rewrite" : "all"} />
+                )}
+
+                <footer className="plasmo-mt-16 plasmo-flex plasmo-flex-wrap plasmo-gap-x-6 plasmo-gap-y-2 plasmo-border-t plasmo-pt-6" style={{ borderColor: "var(--apple-separator)" }}>
+                    {LINKS.map(link => (
+                        <a
+                            key={link.label}
+                            href={link.href}
+                            target={link.href.startsWith("http") ? "_blank" : undefined}
+                            rel="noopener noreferrer"
+                            className="apple-muted plasmo-text-xs plasmo-font-medium hover:plasmo-underline">
+                            {link.label}
+                        </a>
+                    ))}
+                </footer>
+            </main>
         </div>
     )
 }

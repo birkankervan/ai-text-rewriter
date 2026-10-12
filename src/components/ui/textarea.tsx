@@ -8,7 +8,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ classN
     return (
         <textarea
             ref={ref}
-            className={`plasmo-w-full plasmo-bg-white/5 plasmo-text-white/90 plasmo-resize-none focus:plasmo-outline-none focus:plasmo-ring-1 focus:plasmo-ring-white/20 focus:plasmo-bg-white/10 plasmo-transition-all plasmo-text-xs plasmo-leading-relaxed plasmo-placeholder-white/20 ${className}`}
+            className={`apple-field plasmo-w-full plasmo-resize-none plasmo-transition-all plasmo-text-[13px] plasmo-leading-relaxed ${className}`}
             {...props}
         />
     )

@@ -71,17 +71,19 @@ export function useStream() {
             provider,
             model,
             rewriteOptions: options.mode === "rewrite" ? {
-                tone: options.tone
+                tone: options.tone,
+                fixGrammar: options.fixGrammar
             } : undefined,
             translateOptions: options.mode === "translate" ? {
                 targetLang: options.targetLang
             } : undefined
         }
 
-        await sendToBackground({
+        const response = await sendToBackground({
             name: "save-history",
             body: historyPayload
         })
+        if (response?.success === false) throw new Error(response.error || "Failed to save history")
     }
 
     const generate = useCallback(async (prompt: string, options: PromptOptions, autoSaveHistory: boolean = true) => {
@@ -103,6 +105,7 @@ export function useStream() {
                 mode: options.mode,
                 targetLang: options.targetLang,
                 tone: options.tone,
+                fixGrammar: options.fixGrammar,
                 signal: controller.signal
             })
 
@@ -114,18 +117,23 @@ export function useStream() {
                 }
 
                 fullText += chunk
-                // Update state with new chunk
-                setState({ status: 'streaming', data: fullText })
+                if (abortControllerRef.current === controller) {
+                    setState({ status: 'streaming', data: fullText })
+                }
             }
 
-            // Stream completed successfully
+            if (abortControllerRef.current !== controller) return
             setState({ status: 'complete', data: fullText })
 
-            // Save history if requested
             if (autoSaveHistory && fullText) {
-                await saveHistory(prompt, fullText, options)
+                try {
+                    await saveHistory(prompt, fullText, options)
+                } catch (error) {
+                    console.error("Failed to save history:", error)
+                }
             }
         } catch (err: any) {
+            if (abortControllerRef.current !== controller) return
             // Handle abort vs actual errors
             if (err.name === 'AbortError') {
                 // User cancelled - transition to complete with what we have
@@ -142,8 +150,9 @@ export function useStream() {
                 }))
             }
         } finally {
-            // Always cleanup
-            abortControllerRef.current = null
+            if (abortControllerRef.current === controller) {
+                abortControllerRef.current = null
+            }
         }
     }, [])
 
