@@ -1,7 +1,7 @@
 {
   "name": "ai-text-rewriter",
   "displayName": "Smart Translate & Rewrite: AI Rewriter, Grammar Fix & Translator",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Rewrite selected text in 6 tones or translate it into 21 languages, right on the page. Free translation; rewrite uses your AI key.",
   "author": "Birkan Kervan",
   "scripts": {
