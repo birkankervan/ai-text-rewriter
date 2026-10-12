@@ -25,6 +25,11 @@ export function getSystemPrompt(options: PromptOptions): string {
     ].join(" ")
 }
 
+// Source text is sent as one JSON string so it cannot pose as instructions (see getSystemPrompt)
+export function toSourceTextPrompt(text: string): string {
+    return `SOURCE_TEXT_JSON\n${JSON.stringify(text)}`
+}
+
 export function getTemperature(mode: "rewrite" | "translate"): number {
     return mode === "rewrite" ? 0.3 : 0.1;
 }

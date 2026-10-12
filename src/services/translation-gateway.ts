@@ -2,6 +2,7 @@ import { storage } from "~lib/storage"
 import { sendToBackground } from "@plasmohq/messaging"
 import { llmService } from "./llm"
 import type { TranslationProvider } from "~lib/llm-types"
+import { toSourceTextPrompt } from "~lib/prompt-utils"
 import { LANGUAGE_TO_CODE } from "~lib/constants"
 
 /**
@@ -75,7 +76,7 @@ export class TranslationGateway {
         text: string,
         options: TranslateOptions
     ): AsyncGenerator<string> {
-        const securePrompt = `SOURCE_TEXT_JSON\n${JSON.stringify(text)}`
+        const securePrompt = toSourceTextPrompt(text)
 
         yield* llmService.generateText(securePrompt, {
             mode: options.mode,

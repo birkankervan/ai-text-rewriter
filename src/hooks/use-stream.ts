@@ -3,13 +3,7 @@ import { storage } from "~lib/storage"
 import { sendToBackground } from "@plasmohq/messaging"
 import { translationGateway } from "~services/translation-gateway"
 import type { PromptOptions } from "~lib/prompt-utils"
-
-// State machine types
-type StreamState =
-    | { status: 'idle' }
-    | { status: 'streaming', data: string }
-    | { status: 'complete', data: string }
-    | { status: 'error', error: string, data: string }
+import { runStreamRequest, type StreamState } from "./stream-request"
 
 export function useStream() {
     const [state, setState] = useState<StreamState>({ status: 'idle' })
@@ -85,75 +79,13 @@ export function useStream() {
         if (response?.success === false) throw new Error(response.error || "Failed to save history")
     }
 
-    const generate = useCallback(async (prompt: string, options: PromptOptions, autoSaveHistory: boolean = true) => {
-        // Stop any ongoing generation
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort()
-        }
-
-        // Create new abort controller
-        const controller = new AbortController()
-        abortControllerRef.current = controller
-
-        // Transition to streaming state
-        setState({ status: 'streaming', data: '' })
-
-        try {
-            // Use translation gateway instead of direct LLM service
-            const stream = translationGateway.translateText(prompt, {
-                mode: options.mode,
-                targetLang: options.targetLang,
-                tone: options.tone,
-                fixGrammar: options.fixGrammar,
-                signal: controller.signal
-            })
-
-            let fullText = ''
-            for await (const chunk of stream) {
-                // Check if aborted
-                if (controller.signal.aborted) {
-                    break
-                }
-
-                fullText += chunk
-                if (abortControllerRef.current === controller) {
-                    setState({ status: 'streaming', data: fullText })
-                }
-            }
-
-            if (abortControllerRef.current !== controller) return
-            setState({ status: 'complete', data: fullText })
-
-            if (autoSaveHistory && fullText) {
-                try {
-                    await saveHistory(prompt, fullText, options)
-                } catch (error) {
-                    console.error("Failed to save history:", error)
-                }
-            }
-        } catch (err: any) {
-            if (abortControllerRef.current !== controller) return
-            // Handle abort vs actual errors
-            if (err.name === 'AbortError') {
-                // User cancelled - transition to complete with what we have
-                setState(prev => ({
-                    status: 'complete',
-                    data: prev.status === 'streaming' ? prev.data : ''
-                }))
-            } else {
-                // Actual error - transition to error state
-                setState(prev => ({
-                    status: 'error',
-                    error: err.message || 'An error occurred',
-                    data: prev.status === 'streaming' ? prev.data : ''
-                }))
-            }
-        } finally {
-            if (abortControllerRef.current === controller) {
-                abortControllerRef.current = null
-            }
-        }
-    }, [])
+    const generate = useCallback((prompt: string, options: PromptOptions, autoSaveHistory: boolean = true) => runStreamRequest({
+        activeRef: abortControllerRef,
+        setState,
+        // Use translation gateway instead of direct LLM service
+        translate: (text, requestOptions) => translationGateway.translateText(text, requestOptions),
+        saveHistory
+    }, prompt, options, autoSaveHistory), [])
 
     const reset = useCallback(() => {
         if (abortControllerRef.current) {

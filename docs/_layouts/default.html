@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | default: "Privacy Policy" }} - Smart Translate &amp; Rewrite</title>
+  <meta name="description" content="What Smart Translate &amp; Rewrite sends, where, and when. No backend, no account, no analytics.">
+  <link rel="canonical" href="https://birkankervan.github.io/ai-text-rewriter{{ page.url | replace: '.html', '' }}">
+  <meta name="theme-color" content="#08080a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="{{ '/assets/icon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="icon" href="{{ '/assets/icon-128.png' | relative_url }}" type="image/png" sizes="128x128">
+  <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/assets/icon.svg' | relative_url }}" alt="" width="28" height="28"><span>Smart Translate &amp; Rewrite</span></a>
+      <nav class="nav" aria-label="Main">
+        <a href="{{ '/#features' | relative_url }}">Features</a>
+        <a href="{{ '/setup.html' | relative_url }}">Setup guide</a>
+        <a href="{{ '/PRIVACY_POLICY' | relative_url }}" aria-current="page">Privacy</a>
+        <a href="https://github.com/birkankervan/ai-text-rewriter">GitHub</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="https://github.com/birkankervan/ai-text-rewriter/releases/latest">Download</a>
+    </div>
+  </header>
+  <main id="main" class="doc wrap wrap-narrow prose" style="padding-top:72px">
+    {{ content }}
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>Smart Translate &amp; Rewrite</span>
+      <nav aria-label="Footer">
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <a href="{{ '/setup.html' | relative_url }}">Setup guide</a>
+        <a href="https://github.com/birkankervan/ai-text-rewriter">GitHub</a>
+        <a href="mailto:e.birkankervan@gmail.com">Support</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>
