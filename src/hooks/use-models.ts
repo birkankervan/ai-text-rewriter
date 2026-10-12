@@ -118,7 +118,7 @@ export function useOpenRouterModels() {
                     })
                     .map((m: any) => ({
                         id: m.id,
-                        name: m.name + (translationChampions.includes(m.id) ? ' ⭐' : ''),
+                        name: m.name + (translationChampions.includes(m.id) ? ' — Recommended' : ''),
                         pricing: m.pricing,
                         architecture: m.architecture,
                         input_modalities: m.input_modalities,
@@ -131,6 +131,14 @@ export function useOpenRouterModels() {
 }
 
 export function useGeminiModels(apiKey: string) {
+    const preferredModels: Record<string, string> = {
+        "gemini-3.5-flash": "Recommended",
+        "gemini-3.8-flash": "Best quality",
+        "gemini-3.5-flash-lite": "Fast & economical",
+        "gemini-3.1-flash-lite": "Long-term stable"
+    }
+    const preferredModelIds = Object.keys(preferredModels)
+
     return useQuery({
         queryKey: ["gemini-models", apiKey],
         queryFn: async () => {
@@ -139,10 +147,14 @@ export function useGeminiModels(apiKey: string) {
             if (!res.ok) throw new Error("Failed to fetch Gemini models")
             const data = await res.json()
             return data.models
-                .filter((m: any) => m.name.includes("gemini"))
+                .filter((m: any) => {
+                    const id = m.name.replace("models/", "")
+                    return preferredModelIds.includes(id) && m.supportedGenerationMethods?.includes("generateContent")
+                })
+                .sort((a: any, b: any) => preferredModelIds.indexOf(a.name.replace("models/", "")) - preferredModelIds.indexOf(b.name.replace("models/", "")))
                 .map((m: any) => ({
                     id: m.name.replace("models/", ""),
-                    name: m.displayName
+                    name: `${m.displayName} — ${preferredModels[m.name.replace("models/", "")]}`
                 }))
         },
         enabled: !!apiKey,

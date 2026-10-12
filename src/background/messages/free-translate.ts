@@ -16,9 +16,14 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
         }
 
         // Use Google Translate unofficial API
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${to}&dt=t&q=${encodeURIComponent(text)}`
+        const url = "https://translate.googleapis.com/translate_a/single"
+        const body = new URLSearchParams({ client: "gtx", sl: "auto", tl: to, dt: "t", q: text })
 
-        const response = await fetch(url)
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+            body
+        })
 
         if (!response.ok) {
             throw new Error(`Translation API error: ${response.statusText}`)

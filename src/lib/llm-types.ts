@@ -10,6 +10,7 @@ export interface TranslationGatewayOptions {
     mode: "rewrite" | "translate"
     targetLang?: string
     tone?: string
+    fixGrammar?: boolean
     signal?: AbortSignal
 }
 

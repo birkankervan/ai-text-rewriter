@@ -1,0 +1,38 @@
+# Completed Work
+
+Append one concise entry after each completed tracked item. Keep newest entries first.
+
+## 2026-10-12
+
+- **UX-14 — History page redesign:** Replaced the virtualized fixed-height table with a day-grouped list matching the options layout, showing result first with the original below, per-entry copy and delete, inline clear confirmation, filtered counts, and 50-entry paging; removed `react-window`. Checks: browser review with seeded IndexedDB in light/dark, `pnpm typecheck`, `pnpm build`.
+- **UX-13 — Options page redesign:** Replaced the sidebar with the popup's header and segmented navigation, merged API keys and active provider into one provider → key → model flow with key links and model-load feedback, regrouped languages and appearance into settings rows, and fixed theme-following status colours and light-mode primary/disabled buttons. Checks: browser review with a storage shim at desktop and 375px in light/dark, `pnpm typecheck`, `pnpm build`.
+- **FIX-09 — Design hygiene:** Dark mode follows the app setting (attribute-based Tailwind variant, since the class selector was being prefixed); theme changes apply live via `storage.watch`; in-page modal gained dialog semantics, Escape, close button, focus, and no longer covers the selection; removed dead animation classes; fixed light-mode error contrast, keyboard access, live regions, popup translate default, missing prefixes, product name, select chevrons, a rules-of-hooks violation, and dead code. Checks: user review in the extension, `pnpm typecheck`, `pnpm build`.
+
+## 2026-10-09
+
+- **FIX-08 — Compact API key settings:** Stopped pointer styling from overriding positioned controls, restored Show/Hide inside the field, removed the nested heavy panel, and tightened provider rows. Checks: browser geometry/visual review, `pnpm typecheck`, `pnpm build`.
+- **UI-02 — Shared interaction system:** Extracted one delegated pointer-lighting hook and applied appearance, local border reflection, and common controls to popup, options/history, injected modal, and floating selection control; fixed responsive options navigation. Checks: desktop/700px browser review, `pnpm typecheck`, `pnpm build`.
+- **UI-01 — Unified segmented controls:** Added one shared animated component for Rewrite/Translate, AI/Free, appearance, popup settings, and history filters; fixed selected-hover contrast. Checks: browser hover/indicator verification, `pnpm typecheck`, `pnpm build`.
+- **FIX-07 — Local border reflection:** Replaced whole-outline shadows with a 24px pointer-centered light clipped to a fixed 1px border ring, including native form controls. Checks: browser visual/computed-style verification, `pnpm typecheck`, `pnpm build`.
+- **FIX-06 — Border light reflection:** Added a subtle 7–8px outer reflection to pointer-proximate borders using the existing edge intensity and theme-aware reflection color. Checks: computed-style verification, `pnpm typecheck`, `pnpm build`.
+- **FIX-05 — Pointer lighting control:** Reduced the ambient spot to 42px, strengthened proximity-based edge highlights, and added a setting that disables both rendering and pointer-frame work. Checks: browser visual/computed-style verification, `pnpm typecheck`, `pnpm build`.
+- **FIX-04 — Tab and light focus effects:** Replaced instant tab-state styling with a sliding selection pill and changed light-mode ambient/edge illumination to dark shadows. Checks: browser transform verification, `pnpm typecheck`, `pnpm build`.
+- **UX-12 — Appearance and focus lighting:** Added System/Light/Dark modes, optional true-black OLED surfaces, smaller pointer illumination, delegated edge-local glow, and reduced-motion-safe tab transitions. Checks: browser visual review, `pnpm typecheck`, `pnpm build`.
+- **UX-11 — tvOS-inspired popup:** Added a cinematic dark surface, pointer-following ambient illumination, elevated white focus states, and large white primary/setup actions. Checks: browser visual review, `pnpm typecheck`, `pnpm build`.
+- **UX-10 — Compact popup:** Rebuilt the popup as one focused command surface with separate Rewrite/Translate modes, progressive results, and an actionable provider setup state. Checks: browser visual review at 380px, `pnpm typecheck`, `pnpm build`.
+- **UX-09 — Apple Liquid Glass redesign:** Installed and used UI/UX Pro Max, removed gradient/glow styling, and unified popup, in-page controls, options, and history around restrained glass navigation and neutral content surfaces. Checks: browser visual review, `pnpm typecheck`, `pnpm build`.
+- **UX-08 — Recent rewrites:** Added a shared last-rewrites accordion with the latest 10 results and a direct link to rewrite-filtered history. Checks: `pnpm typecheck`, `pnpm build`.
+- **UX-07 — Gemini recommendations:** Replaced legacy 2.5 choices with four current Flash/Flash-Lite text models, added use-case labels, and defaulted to Gemini 3.5 Flash. Checks: `pnpm typecheck`, `pnpm build`.
+- **FIX-03 — Gemini 503 recovery:** Added two bounded retries with exponential backoff and jitter for transient Gemini service failures. Checks: `pnpm typecheck`, `pnpm build`.
+- **FIX-02 — Gemini streaming diagnosis:** Restored Gemini 3.8 Flash, requested documented SSE output, parsed Gemini events, and surfaced Google API error details. Checks: `pnpm typecheck`, `pnpm build`.
+- **FIX-01 correction:** The model-removal conclusion was rejected after research confirmed Gemini 3.8 Flash support; the option was restored under FIX-02.
+- **FIX-01 — Gemini availability:** Removed unavailable Gemini 3.x entries and made Gemini 2.5 Flash the default. Checks: `pnpm typecheck`, `pnpm build`.
+- **UX-06 — Curated Gemini models:** Limited selection to a small stable text-generation set suitable for translation and updated the Gemini default. Checks: `pnpm typecheck`, `pnpm build`.
+- **UX-05 — Provider setup:** Put API keys first, separated provider/model selection, and removed key-save side effects and the model modal. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-07 — Prompt hardening:** Split rewrite and translation tasks, preserved structured values, and encoded source text as JSON data. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-06 — Remember rewrite choices:** Stored and restored the last valid rewrite tone and language across popup and in-page modal sessions. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-05 — API key setup:** Improved key input, made storage behavior explicit, activated the saved provider, and opened model selection after save. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-04 — Non-blocking history:** Isolated history failures from successful generation results. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-03 — Controlled input replacement:** Switched input and textarea replacement to their native value setter before dispatching events. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-02 — Request lifecycle:** Removed duplicate language-change generation and prevented stale requests from changing the active request state. Checks: `pnpm typecheck`, `pnpm build`.
+- **BASE-01 — Explicit request action:** Removed translation prefetch from floating-button hover; provider requests now start after the modal is opened. Checks: `pnpm typecheck`, `pnpm build`.

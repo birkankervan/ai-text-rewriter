@@ -5,6 +5,18 @@ import { API_ENDPOINTS, DEFAULTS } from "~lib/constants"
 
 const storage = new Storage()
 
+const wait = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
+    const onAbort = () => {
+        clearTimeout(timeout)
+        reject(new DOMException("The operation was aborted", "AbortError"))
+    }
+    const timeout = setTimeout(() => {
+        signal?.removeEventListener("abort", onAbort)
+        resolve()
+    }, ms)
+    signal?.addEventListener("abort", onAbort, { once: true })
+})
+
 // --- Stream Parsers ---
 
 async function* streamSSE(response: Response): AsyncGenerator<string> {
@@ -53,7 +65,6 @@ async function* streamGemini(response: Response): AsyncGenerator<string> {
     if (!reader) throw new Error("No response body")
     const decoder = new TextDecoder()
     let buffer = ""
-    const regex = /"text":\s*"((?:[^"\\]|\\.)*)"/g
 
     try {
         while (true) {
@@ -61,20 +72,24 @@ async function* streamGemini(response: Response): AsyncGenerator<string> {
             if (done) break
 
             buffer += decoder.decode(value, { stream: true })
-            let match
-            let lastIndex = 0
+            const lines = buffer.split("\n")
+            buffer = lines.pop() || ""
 
-            while ((match = regex.exec(buffer)) !== null) {
+            for (const line of lines) {
+                const trimmed = line.trim()
+                if (!trimmed.startsWith("data:")) continue
+
                 try {
-                    const text = JSON.parse(`"${match[1]}"`)
-                    if (text) yield text
-                    lastIndex = regex.lastIndex
-                } catch (e) {
+                    const data = JSON.parse(trimmed.slice(5).trim())
+                    for (const candidate of data.candidates || []) {
+                        for (const part of candidate.content?.parts || []) {
+                            if (typeof part.text === "string" && !part.thought) yield part.text
+                        }
+                    }
+                } catch {
                     // Ignore parsing errors for individual chunks
                 }
             }
-
-            if (lastIndex > 0) buffer = buffer.slice(lastIndex)
         }
     } finally {
         // Always release the reader
@@ -137,8 +152,11 @@ const strategies: Record<string, ProviderStrategy> = {
         streamParser: streamSSE
     },
     gemini: {
-        getUrl: (model, apiKey) => `${API_ENDPOINTS.gemini.base}/${model}:streamGenerateContent?key=${apiKey}`,
-        getHeaders: () => ({ "Content-Type": "application/json" }),
+        getUrl: (model) => `${API_ENDPOINTS.gemini.base}/${model}:streamGenerateContent?alt=sse`,
+        getHeaders: (apiKey) => ({
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey
+        }),
         getBody: (_, systemPrompt, userPrompt) => ({
             contents: [{ parts: [{ text: `${systemPrompt}\n\nUser Input: ${userPrompt}` }] }]
         }),
@@ -164,14 +182,27 @@ export class LLMService {
         const systemPrompt = getSystemPrompt(options)
         const temperature = getTemperature(options.mode)
 
-        const response = await fetch(strategy.getUrl(model, apiKey), {
+        const request = () => fetch(strategy.getUrl(model, apiKey), {
             method: "POST",
             headers: strategy.getHeaders(apiKey),
             body: JSON.stringify(strategy.getBody(model, systemPrompt, prompt, temperature)),
             signal: options.signal
         })
 
-        if (!response.ok) throw new Error(`${providerName.toUpperCase()} Error: ${response.statusText}`)
+        let response = await request()
+        if (providerName === "gemini") {
+            for (let attempt = 0; response.status === 503 && attempt < 2; attempt++) {
+                await response.body?.cancel()
+                await wait((2 ** attempt * 1000) + Math.random() * 250, options.signal)
+                response = await request()
+            }
+        }
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => null)
+            const detail = errorBody?.error?.message || `${response.status} ${response.statusText}`
+            throw new Error(`${providerName.toUpperCase()} Error: ${detail}`)
+        }
         yield* strategy.streamParser(response)
     }
 }

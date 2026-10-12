@@ -58,6 +58,24 @@ class HistoryService {
         return db.getAllFromIndex(STORE_NAME, "by-date")
     }
 
+    async getRecent(type: HistoryItem["type"], limit: number) {
+        const db = await this.dbPromise
+        const items: HistoryItem[] = []
+        let cursor = await db.transaction(STORE_NAME).store.index("by-date").openCursor(null, "prev")
+
+        while (cursor && items.length < limit) {
+            if (cursor.value.type === type) items.push(cursor.value)
+            cursor = await cursor.continue()
+        }
+
+        return items
+    }
+
+    async delete(id: number) {
+        const db = await this.dbPromise
+        return db.delete(STORE_NAME, id)
+    }
+
     async clear() {
         const db = await this.dbPromise
         return db.clear(STORE_NAME)

@@ -4,10 +4,9 @@ import { useFloatingPosition } from "./use-floating-position"
 
 interface UseSelectionManagerProps {
     showModal: boolean
-    onSelectionChange?: () => void
 }
 
-export function useSelectionManager({ showModal, onSelectionChange }: UseSelectionManagerProps) {
+export function useSelectionManager({ showModal }: UseSelectionManagerProps) {
     const [isVisible, setIsVisible] = useState(false)
     const [mode, setMode] = useState<"rewrite" | "translate">("translate")
     const [targetElement, setTargetElement] = useState<HTMLElement | null>(null)
@@ -47,13 +46,11 @@ export function useSelectionManager({ showModal, onSelectionChange }: UseSelecti
 
             if (!hasSelection && !isInputSelection) {
                 setIsVisible(false)
-                onSelectionChange?.()
                 return
             }
 
             if (currentSelectedText !== selectedText) {
                 setSelectedText(currentSelectedText)
-                onSelectionChange?.()
             }
 
             const editable = isEditableElement(activeElement)
@@ -80,7 +77,7 @@ export function useSelectionManager({ showModal, onSelectionChange }: UseSelecti
                 setIsVisible(true)
             }
         }, 150)
-    }, [showModal, selectedText, onSelectionChange, updatePosition])
+    }, [showModal, selectedText, updatePosition])
 
     useEffect(() => {
         document.addEventListener("mouseup", handleSelection)
