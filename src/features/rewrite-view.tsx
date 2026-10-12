@@ -1,7 +1,7 @@
 import { Check, ChevronDown, Copy, RefreshCw, Sparkles, Square } from "lucide-react"
 import { onActivate } from "~lib/a11y"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { useLLM } from "~hooks/use-llm"
 import { SUPPORTED_LANGUAGES, TONES, type SupportedLanguage, type Tone } from "~lib/constants"
 import { ErrorState } from "./components/error-state"
@@ -9,7 +9,6 @@ import { Button } from "~components/ui/button"
 import { Textarea } from "~components/ui/textarea"
 import { RecentRewrites } from "./recent-rewrites"
 
-const storage = new Storage()
 const LAST_REWRITE_TONE = "last_rewrite_tone"
 const LAST_REWRITE_LANGUAGE = "last_rewrite_language"
 

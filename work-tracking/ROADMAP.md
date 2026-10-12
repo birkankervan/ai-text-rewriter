@@ -49,8 +49,8 @@ Keep this file current. Move an item to `Done` only after its acceptance checks 
 | BRAND-02 | Store screenshots and promo tiles | P0 | Done | 1280×800 screenshots from the real UI plus 440×280 and 1400×560 promo tiles | Images show current UI, meet Chrome Web Store sizes, and carry one short message each |
 | BRAND-03 | Store listing copy | P0 | Done | Rewrite `store_listings.md` for the current product | Within store character limits, no promises the extension does not keep, privacy claims match the code |
 | UI-03 | Monochrome in-page primary and provider names | P0 | Done | In-page primary action uses the label/surface inverse; history shows provider display names | No blue primary button outside the popup accent states; history never shows raw provider ids |
-| SEC-01 | Keep API keys out of Chrome Sync | P0 | Planned | Store provider keys in `chrome.storage.local` and migrate existing synced keys | Keys never appear in `chrome.storage.sync`; existing users keep working keys after update |
-| PRIV-02 | Correct the privacy policy | P0 | Planned | Disclose free Google Translate, real storage areas, host permissions, and 15-day history | Every statement in `docs/PRIVACY_POLICY.md` matches the code and the store data disclosure |
+| SEC-01 | Keep API keys out of Chrome Sync | P0 | Done | Store provider keys in `chrome.storage.local` and migrate existing synced keys | Keys never appear in `chrome.storage.sync`; existing users keep working keys after update |
+| PRIV-02 | Correct the privacy policy | P0 | Done | Disclose free Google Translate, real storage areas, host permissions, and 15-day history | Every statement in `docs/PRIVACY_POLICY.md` matches the code and the store data disclosure |
 | PRIV-01 | History controls | P0 | Planned | Save history toggle plus 1/7/15/30-day retention | Disabled history creates no records; cleanup follows the selected period |
 | TEST-01 | Critical flow tests | P0 | Planned | Prompt output, stale requests, single language-change request, history failure | Tests fail on the known regressions and run in CI |
 

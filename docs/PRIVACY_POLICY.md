@@ -1,41 +1,49 @@
-# Privacy Policy for ai-text-rewriter
+# Privacy Policy for Smart Translate & Rewrite
 
-**Last Updated:** December 08, 2025
+**Last updated:** October 12, 2026
 
-## Introduction
-The **ai-text-rewriter** extension ("we", "us", or "our") respects your privacy. This Privacy Policy explains how we handle your data when you use our browser extension.
+Smart Translate & Rewrite ("the extension") is a browser extension that rewrites and translates text you select. It has no account system, no backend server, and no analytics or tracking. The developer does not receive any of your text, keys, or usage data.
 
-## Data Collection and Usage
-We are transparent about what data we collect and how it is used:
+## What leaves your device, and when
 
-1.  **User Input Data**:
-    - When you select text and use the "Rewrite" or "Translate" features, the selected text is sent to the AI provider you have configured (e.g., OpenAI, Google Gemini, Groq, OpenRouter).
-    - This data is processed **solely** for the purpose of generating the rewritten or translated text you requested.
-    - We do **not** store, harvest, or sell your text inputs on our own servers. The data goes directly from your browser to the chosen AI provider's API.
+Nothing is sent when you only select text. Data is sent only after you click an action such as **Generate**, **Translate**, or the in-page Translate button.
 
-2.  **API Keys**:
-    - Your API keys (e.g., for OpenAI, Gemini) are stored **locally** on your device using Chrome's secure storage API (`chrome.storage.local`).
-    - These keys are never transmitted to us or any third party other than the respective API provider for authentication purposes.
+| Data | Sent to | When |
+|---|---|---|
+| Selected or pasted text, plus the chosen tone and language | The AI provider you connected: OpenRouter, OpenAI, Google Gemini, or Groq | When you run a rewrite, or an AI translation |
+| Selected or pasted text and the target language | Google Translate (`translate.googleapis.com`) | When you translate with the free engine. This is the default for translation and needs no key |
+| Your API key for a provider | Only that provider, in a request header | With each request to that provider, and when the settings page loads its model list |
 
-3.  **History**:
-    - The extension stores a local history of your rewrites and translations within your browser's internal storage (IndexedDB/LocalStorage) to allow you to review past generations.
-    - This history stays on your device and is not synced to any cloud server controlled by us.
+Requests go directly from your browser to these services. Their own privacy policies apply to the text they receive:
 
-## Third-Party AI Providers
-This extension acts as a client for various AI services. By using a specific provider, you are subject to their respective privacy policies:
-- **OpenAI**: [Privacy Policy](https://openai.com/privacy)
-- **Google (Gemini)**: [Privacy Policy](https://policies.google.com/privacy)
-- **Groq**: [Privacy Policy](https://groq.com/privacy)
-- **OpenRouter**: [Privacy Policy](https://openrouter.ai/privacy)
+- OpenRouter: https://openrouter.ai/privacy
+- OpenAI: https://openai.com/policies/privacy-policy
+- Google (Gemini and Google Translate): https://policies.google.com/privacy
+- Groq: https://groq.com/privacy-policy
+
+## What is stored on your device
+
+- **API keys and settings** (active provider, model, default languages, last tone, appearance) are stored in the extension's local storage (`chrome.storage.local`). They are not synced to your Google account or any other device. Versions before 1.0.14 used `chrome.storage.sync`; on update, the extension moves that data to local storage and removes it from sync.
+- **API keys are not encrypted** by the extension. Anyone with access to your browser profile could read them.
+- **History** of rewrites and translations is stored in the extension's IndexedDB. Each entry contains the original text, the result, the type, the provider and model, the tone or target language, and the time. Entries are deleted automatically after 15 days. You can delete single entries or clear all history on the History page.
+
+Removing the extension deletes all of this data.
 
 ## Permissions
-The extension requests the following permissions for specific functionalities:
-- **Host Permissions (`<all_urls>`)**: Required to display the floating "Rewrite/Translate" button on any webpage when you select text. The extension injects a lightweight content script to detect text selection events.
-- **Storage**: Required to save your preferences, API keys, and history locally.
-- **Alarms**: Used to schedule automatic cleanup of old history data.
 
-## Changes to This Policy
-We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
+- **Content script on all sites:** shows the floating Rewrite/Translate button when you select text on a page, and replaces the text in an editable field when you click Replace. The script does not read pages or send anything until you act.
+- **Host access to `openrouter.ai`, `api.openai.com`, `generativelanguage.googleapis.com`, `api.groq.com`, and `translate.googleapis.com`:** lets the extension send your requests to the provider you choose, or to Google Translate.
+- **`storage`:** saves your keys and settings on this device.
+- **`alarms`:** runs the daily cleanup that deletes history older than 15 days.
 
-## Contact Us
-If you have any questions about this Privacy Policy, please contact us via our support channels.
+## Data sale and sharing
+
+The developer does not collect, sell, or share your data. Text and keys are sent only to the services listed above, and only to fulfil the action you requested.
+
+## Changes
+
+Changes to this policy are published on this page with a new "Last updated" date.
+
+## Contact
+
+Questions: e.birkankervan@gmail.com

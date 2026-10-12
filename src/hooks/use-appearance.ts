@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 
 export type AppearanceMode = "system" | "light" | "dark"
-
-const storage = new Storage()
 
 export function useAppearance() {
     const [mode, setMode] = useState<AppearanceMode>("system")

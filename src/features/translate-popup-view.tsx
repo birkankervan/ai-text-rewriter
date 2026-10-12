@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLLM } from "~hooks/use-llm"
 import { LANGUAGE_TO_CODE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "~lib/constants"
 import { sendToBackground } from "@plasmohq/messaging"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { ErrorState } from "./components/error-state"
 import { SegmentedControl } from "~components/ui/segmented-control"
 
@@ -97,7 +97,7 @@ export const TranslatePopupView = ({
 
     // Default to the stored provider preference; fall back to free without an API key
     useEffect(() => {
-        new Storage().get("preferred_translation_provider").then((stored) => {
+        storage.get("preferred_translation_provider").then((stored) => {
             setMode(stored === "ai" && apiKey ? "ai" : "free")
         })
     }, [apiKey])

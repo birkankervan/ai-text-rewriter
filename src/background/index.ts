@@ -1,4 +1,5 @@
 import { historyService } from "~services/history"
+import { migrateSyncToLocal } from "~lib/storage"
 
 // Setup automatic history cleanup (15 days)
 const ALARM_NAME = "history-cleanup"
@@ -40,6 +41,10 @@ const runStartupCleanup = async () => {
         console.error("❌ Failed to run startup cleanup:", error)
     }
 }
+
+// SEC-01: move keys/settings written by older versions out of chrome.storage.sync
+const runMigration = () => migrateSyncToLocal().catch((error) => console.error("❌ Failed to migrate storage:", error))
+runMigration()
 
 chrome.runtime.onInstalled.addListener(runStartupCleanup)
 chrome.runtime.onStartup.addListener(runStartupCleanup)

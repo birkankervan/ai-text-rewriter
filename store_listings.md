@@ -50,7 +50,7 @@ PRIVACY
 • No backend, no account, no analytics. The extension talks directly to the service you chose.
 • Rewrites and AI translations go to your chosen AI provider using your own API key.
 • Free translation sends the selected text to Google Translate.
-• API keys and settings are kept in Chrome extension storage. History stays in your browser and is deleted automatically after 15 days, or whenever you clear it.
+• API keys and settings stay on this device and are never synced to your Google account. History stays in your browser and is deleted automatically after 15 days, or whenever you clear it.
 
 SUPPORTED PROVIDERS & LANGUAGES
 AI providers (bring your own key): OpenRouter, OpenAI, Google Gemini, Groq. Choose any model your provider lists; the model list loads from the provider.
@@ -105,7 +105,7 @@ GİZLİLİK
 • Sunucu yok, hesap yok, analitik yok. Eklenti doğrudan seçtiğin servisle konuşur.
 • Yeniden yazımlar ve yapay zekâ çevirileri, kendi API anahtarınla seçtiğin sağlayıcıya gider.
 • Ücretsiz çeviri, seçtiğin metni Google Translate'e gönderir.
-• API anahtarların ve ayarların Chrome eklenti depolamasında tutulur. Geçmiş tarayıcında kalır; 15 gün sonra kendiliğinden ya da sen temizlediğinde silinir.
+• API anahtarların ve ayarların yalnızca bu cihazda tutulur, Google hesabınla senkronlanmaz. Geçmiş tarayıcında kalır; 15 gün sonra kendiliğinden ya da sen temizlediğinde silinir.
 
 DESTEKLENEN SAĞLAYICILAR VE DİLLER
 Yapay zekâ sağlayıcıları (kendi anahtarınla): OpenRouter, OpenAI, Google Gemini, Groq. Sağlayıcının sunduğu modellerden istediğini seçebilirsin; liste doğrudan sağlayıcıdan gelir.
@@ -160,8 +160,8 @@ What the code actually does:
 |---|---|---|---|
 | Selected or typed text (rewrite) | Chosen AI provider: OpenRouter, OpenAI, Google Gemini or Groq | After the user clicks Generate | Original + result saved in local IndexedDB history, auto-deleted after 15 days |
 | Selected or typed text (translate) | Google Translate (`translate.googleapis.com`, default) or the chosen AI provider | After the user clicks the Translate button / popup Translate | Same local history |
-| API keys | Only to the matching provider, as an auth header (Gemini model list: URL query) | On requests and model-list loads | `chrome.storage.sync` (Plasmo default area); synced by Chrome if the user has Chrome Sync on |
-| Settings, last tone/language, appearance | Nowhere | — | `chrome.storage.sync` |
+| API keys | Only to the matching provider, in a request header | On requests and model-list loads | `chrome.storage.local` on this device only (not synced; moved out of sync in 1.0.14) |
+| Settings, last tone/language, appearance | Nowhere | — | `chrome.storage.local` |
 | Anything to the developer | Nothing. No backend, analytics, telemetry or crash reporting | — | — |
 
 Recommended answers on the CWS "Data usage" form (conservative, because selected text and keys leave the device for third-party APIs):
@@ -193,6 +193,8 @@ Privacy policy URL: `https://birkankervan.github.io/ai-text-rewriter/PRIVACY_POL
 ---
 
 ## 6. Discrepancies found (old listing / privacy policy / README vs code)
+
+Resolved on 2026-10-12: items 2–5 by PRIV-02 (rewritten `docs/PRIVACY_POLICY.md`) and SEC-01 (keys and settings moved to `chrome.storage.local`); the Gemini `?key=` query and the OpenRouter `HTTP-Referer` in item 13 are also fixed.
 
 1. **"Draggable window"** (old listing, README): the panel is anchored above or below the selection and cannot be dragged.
 2. **Key storage location**: the privacy policy says keys are in `chrome.storage.local`. The code uses Plasmo `new Storage()`, whose default area is `sync`, so keys and settings sync across the user's Chrome profiles when Chrome Sync is on.
