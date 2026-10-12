@@ -1,13 +1,11 @@
 import { Loader2, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import type { SupportedLanguage } from "~lib/constants"
 import TranslateView from "~features/translate-view"
 import RewriteView from "~features/rewrite-view"
 import { useAppearance } from "~hooks/use-appearance"
 import { usePointerLighting } from "~hooks/use-pointer-lighting"
-
-const storage = new Storage()
 
 interface TranslationModalProps {
     isOpen: boolean

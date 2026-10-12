@@ -1,10 +1,8 @@
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { sendToBackground } from "@plasmohq/messaging"
 import { llmService } from "./llm"
 import type { TranslationProvider } from "~lib/llm-types"
 import { LANGUAGE_TO_CODE } from "~lib/constants"
-
-const storage = new Storage()
 
 /**
  * Translation Gateway Service

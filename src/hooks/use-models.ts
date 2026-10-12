@@ -143,7 +143,7 @@ export function useGeminiModels(apiKey: string) {
         queryKey: ["gemini-models", apiKey],
         queryFn: async () => {
             if (!apiKey) return []
-            const res = await fetch(`${API_ENDPOINTS.gemini.base}?key=${apiKey}`)
+            const res = await fetch(API_ENDPOINTS.gemini.base, { headers: { "x-goog-api-key": apiKey } })
             if (!res.ok) throw new Error("Failed to fetch Gemini models")
             const data = await res.json()
             return data.models

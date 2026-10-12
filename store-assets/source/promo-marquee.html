@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Marquee promo tile</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1400px; height: 560px; overflow: hidden; }
+  body {
+    background: linear-gradient(155deg, #191a20 0%, #0b0b0e 52%, #050506 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    color: #f5f5f7; -webkit-font-smoothing: antialiased; position: relative;
+  }
+  .copy { position: absolute; left: 96px; top: 0; bottom: 0; width: 520px; display: flex; flex-direction: column; justify-content: center; }
+  img { width: 104px; height: 104px; display: block; filter: drop-shadow(0 0 1px rgba(255,255,255,.4)) drop-shadow(0 12px 28px rgba(0,0,0,.5)); }
+  h1 { margin: 30px 0 0; font-size: 54px; line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
+  p { margin: 18px 0 0; font-size: 24px; line-height: 1.4; color: #a1a1a6; }
+  .win {
+    position: absolute; left: 700px; top: 64px; width: 760px; height: 560px;
+    border-radius: 14px; overflow: hidden; background: #fff;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 30px 80px rgba(0,0,0,0.55);
+  }
+  .bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #2a2a2e; }
+  .bar i { width: 12px; height: 12px; border-radius: 50%; background: #4a4a4f; display: block; }
+  iframe { border: 0; width: 100%; height: calc(100% - 40px); display: block; }
+</style>
+</head>
+<body>
+  <div class="copy">
+    <img src="/icon/icon-1024.png" alt="">
+    <h1>Smart Translate<br>&amp; Rewrite</h1>
+    <p>Rewrite, fix grammar and translate selected text right on the page.</p>
+  </div>
+  <div class="win"><div class="bar"><i></i><i></i><i></i></div><iframe src="page-compose.html?theme=dark"></iframe></div>
+</body>
+</html>

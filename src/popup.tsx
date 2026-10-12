@@ -1,7 +1,7 @@
 
 
 import { useState, useEffect } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { Settings } from "lucide-react"
 import iconSrc from "url:~assets/icon.png"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -13,7 +13,6 @@ import { SegmentedControl } from "~components/ui/segmented-control"
 import { usePointerLighting } from "~hooks/use-pointer-lighting"
 import "./style.css"
 
-const storage = new Storage()
 const queryClient = new QueryClient()
 
 function PopupContent() {

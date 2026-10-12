@@ -1,9 +1,7 @@
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import type { LLMRequestOptions } from "~lib/llm-types"
 import { getSystemPrompt, getTemperature } from "~lib/prompt-utils"
 import { API_ENDPOINTS, DEFAULTS } from "~lib/constants"
-
-const storage = new Storage()
 
 const wait = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
     const onAbort = () => {
@@ -111,7 +109,7 @@ const strategies: Record<string, ProviderStrategy> = {
         getUrl: () => API_ENDPOINTS.openrouter.chat,
         getHeaders: (apiKey) => ({
             "Authorization": `Bearer ${apiKey}`,
-            "HTTP-Referer": "https://github.com/PlasmoHQ/plasmo",
+            "HTTP-Referer": "https://birkankervan.github.io/ai-text-rewriter/",
             "X-Title": "Smart Translate & Rewrite",
             "Content-Type": "application/json"
         }),

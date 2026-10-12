@@ -1,7 +1,7 @@
 import cssText from "data-text:~style.css"
 import { useCallback, useEffect, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import type { PlasmoCSConfig } from "plasmo"
 
 import { TranslationModal } from "~features/translation-modal"
@@ -48,7 +48,6 @@ const PlasmoOverlayContent = () => {
   // Check API key existence
   useEffect(() => {
     const checkApiKey = async () => {
-      const storage = new Storage()
       const activeProvider = await storage.get("active_provider") || "openrouter"
       const apiKey = await storage.get(`${activeProvider}_key`)
       setHasApiKey(!!apiKey)

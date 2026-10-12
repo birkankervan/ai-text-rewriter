@@ -1,12 +1,10 @@
 import { useState, useEffect, type ReactNode } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { ChevronDown, Monitor, Moon, Sun } from "lucide-react"
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "~lib/constants"
 import type { TranslationProvider } from "~lib/llm-types"
 import type { AppearanceMode } from "~hooks/use-appearance"
 import { SegmentedControl } from "~components/ui/segmented-control"
-
-const storage = new Storage()
 
 function SettingsSection({ title, children }: { title: string, children: ReactNode }) {
     return (

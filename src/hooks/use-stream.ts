@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { sendToBackground } from "@plasmohq/messaging"
 import { translationGateway } from "~services/translation-gateway"
 import type { PromptOptions } from "~lib/prompt-utils"
@@ -39,7 +39,6 @@ export function useStream() {
     }, [])
 
     const saveHistory = async (prompt: string, fullText: string, options: PromptOptions) => {
-        const storage = new Storage()
         // Determine actual provider used based on mode and preferences
         let provider: string
         let model: string

@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
-import { Storage } from "@plasmohq/storage"
+import { storage } from "~lib/storage"
 import { useOpenAIModels, useOpenRouterModels, useGeminiModels, useGroqModels } from "~hooks/use-models"
 import { DEFAULTS, PROVIDERS } from "~lib/constants"
-
-const storage = new Storage()
 
 export function useOptionsSettings() {
     const [isLoading, setIsLoading] = useState(true)

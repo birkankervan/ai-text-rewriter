@@ -185,13 +185,14 @@ body {
   transform: none !important;
 }
 
+/* Monochrome primary: inverse of the surface, matching the popup's white action */
 .apple-primary {
-  background: var(--apple-accent) !important;
-  color: #fff !important;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--apple-accent) 24%, transparent) !important;
+  background: var(--apple-label) !important;
+  color: var(--apple-surface-solid) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
 }
 
-.apple-primary:hover { background: var(--apple-accent-hover) !important; }
+.apple-primary:hover { opacity: 0.9; }
 
 .apple-primary:disabled {
   background: rgba(118, 118, 128, 0.16) !important;
