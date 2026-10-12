@@ -25,6 +25,7 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       version: ${{ needs.bump-version.outputs.new_version }}
+      commit_sha: ${{ needs.bump-version.outputs.commit_sha }}
 
   release:
     needs: [bump-version, build]

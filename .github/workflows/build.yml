@@ -7,6 +7,10 @@ on:
         description: 'Version to build'
         required: true
         type: string
+      commit_sha:
+        description: 'Commit to build (the version bump commit)'
+        required: true
+        type: string
     outputs:
       artifact_name:
         description: "Name of the uploaded artifact"
@@ -20,6 +24,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Build the exact version-bump commit; the triggering SHA still has the old version.
+          # A SHA (not the tag name) cannot be shadowed by a branch or re-pointed.
+          ref: ${{ inputs.commit_sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

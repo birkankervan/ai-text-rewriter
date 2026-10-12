@@ -15,6 +15,9 @@ on:
       changelog:
         description: "The changelog for this version"
         value: ${{ jobs.bump.outputs.changelog }}
+      commit_sha:
+        description: "SHA of the version bump commit"
+        value: ${{ jobs.bump.outputs.commit_sha }}
 
 jobs:
   bump:
@@ -24,6 +27,7 @@ jobs:
     outputs:
       new_version: ${{ steps.get_version.outputs.version }}
       changelog: ${{ steps.changelog.outputs.log }}
+      commit_sha: ${{ steps.get_version.outputs.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,6 +66,7 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Push Changes
         run: |
